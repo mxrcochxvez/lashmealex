@@ -1,0 +1,13 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+.next
+.turbo
+node_modules
+dist
+build
+coverage
+.medusa
+apps/backend/.cache
+apps/backend/uploads

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Header from "../components/Header";
-import ProductCard from "../components/ProductCard";
+import ProductGridWithQuickView from "../components/ProductGridWithQuickView";
 import { FadeIn } from "../components/LoadingStates";
 
 const featuredProducts = [
@@ -188,13 +188,7 @@ export default function Home() {
               </Link>
             </FadeIn>
 
-            <div className="grid gap-12 md:grid-cols-2 xl:grid-cols-4">
-              {featuredProducts.map((product, index) => (
-                <FadeIn key={product.id} delay={index * 0.08}>
-                  <ProductCard product={product} />
-                </FadeIn>
-              ))}
-            </div>
+            <ProductGridWithQuickView products={featuredProducts} columns={4} />
           </div>
         </section>
 
@@ -256,13 +250,7 @@ export default function Home() {
               </Link>
             </FadeIn>
 
-            <div className="grid gap-12 md:grid-cols-2 xl:grid-cols-4">
-              {newArrivals.map((product, index) => (
-                <FadeIn key={product.id} delay={index * 0.08}>
-                  <ProductCard product={product} />
-                </FadeIn>
-              ))}
-            </div>
+            <ProductGridWithQuickView products={newArrivals} columns={4} />
           </div>
         </section>
 

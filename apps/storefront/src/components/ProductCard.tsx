@@ -62,12 +62,13 @@ export default function ProductCard({
   return (
     <motion.article
       className={clsx(
-        'group relative overflow-hidden rounded-none border border-line bg-white transition-all duration-300 hover:shadow-xl',
+        'group relative cursor-pointer overflow-hidden rounded-none border border-line bg-white transition-all duration-300 hover:shadow-xl',
         !product.inStock && 'opacity-70',
         className
       )}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
+      onClick={() => onQuickView?.(product)}
       layout
     >
       <div className="relative aspect-[4/5] overflow-hidden bg-[#f4f4f4]">

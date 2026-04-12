@@ -1,5 +1,6 @@
 "$schema" = "node_modules/wrangler/config-schema.json"
 name = "lashmealex-storefront"
+account_id = "f59a296b69d6b48f536b4ad6ca37d959"
 main = ".open-next/worker.js"
 compatibility_date = "2026-04-12"
 compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
@@ -11,7 +12,7 @@ directory = ".open-next/assets"
 [[d1_databases]]
 binding = "DB"
 database_name = "lashmealex-d1"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "5fed034e-a75f-4b48-b34f-a51c467ed3bd"
 migrations_dir = "drizzle/migrations"
 
 [[r2_buckets]]

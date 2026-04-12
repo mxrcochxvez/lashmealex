@@ -133,7 +133,7 @@ export default function Home() {
                   <div className="mt-20 grid gap-12 border-t border-line pt-12 sm:grid-cols-3">
                     {["Salon-Curated", "Professional Grade", "Same-Day Ready"].map((item) => (
                       <div key={item} className="space-y-3">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-foreground">/</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-pink-dark">—</p>
                         <p className="text-[11px] font-bold uppercase tracking-wider leading-relaxed text-muted">{item}</p>
                       </div>
                     ))}
@@ -157,7 +157,10 @@ export default function Home() {
                       View Details
                     </Link>
                   </div>
-                  <div className="h-80 bg-[url('https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=1000&auto=format&fit=crop')] bg-cover bg-center grayscale contrast-125" />
+                  <div className="relative h-80 overflow-hidden">
+                    <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=1000&auto=format&fit=crop')] bg-cover bg-center" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#d9b09f]/20 to-transparent mix-blend-multiply" />
+                  </div>
                 </div>
               </FadeIn>
             </div>
@@ -214,14 +217,17 @@ export default function Home() {
                 <FadeIn key={cat.name} delay={index * 0.06}>
                   <Link
                     href={cat.href}
-                    className="group flex flex-col justify-between border-b border-foreground bg-white p-8 transition-colors hover:bg-foreground hover:text-background sm:border-b-0 sm:border-r last:border-r-0 last:border-b-0"
+                    className="group flex flex-col justify-between border-b border-foreground bg-white p-8 transition-all duration-200 hover:bg-foreground hover:text-background sm:border-b-0 sm:border-r last:border-r-0 last:border-b-0"
                   >
                     <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted group-hover:text-background/60">
                       {cat.count} products
                     </p>
-                    <p className="mt-8 font-display text-2xl font-medium tracking-tight group-hover:text-background">
-                      {cat.name}
-                    </p>
+                    <div className="mt-8 flex items-center justify-between">
+                      <p className="font-display text-2xl font-medium tracking-tight group-hover:text-background">
+                        {cat.name}
+                      </p>
+                      <span className="text-muted opacity-0 transition-all duration-200 group-hover:opacity-100 group-hover:text-background/60" aria-hidden="true">&rarr;</span>
+                    </div>
                   </Link>
                 </FadeIn>
               ))}
@@ -293,17 +299,17 @@ export default function Home() {
                   <div className="space-y-16">
                     <div>
                       <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-pink-light opacity-80">Hours</p>
-                      <p className="mt-6 font-display text-4xl font-medium tracking-tight">Wed – Sat</p>
+                      <p className="mt-6 font-display text-3xl font-medium tracking-tight">Wed – Sat</p>
                     </div>
-                    <div className="h-px bg-white/20" />
+                    <div className="h-px bg-white/15" />
                     <div>
                       <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-pink-light opacity-80">Location</p>
-                      <p className="mt-6 font-display text-4xl font-medium tracking-tight">Fresno, CA</p>
+                      <p className="mt-6 font-display text-3xl font-medium tracking-tight">Fresno, CA</p>
                     </div>
-                    <div className="h-px bg-white/20" />
+                    <div className="h-px bg-white/15" />
                     <div>
                       <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-pink-light opacity-80">Online Orders</p>
-                      <p className="mt-6 font-display text-4xl font-medium tracking-tight">Same-Day Pickup</p>
+                      <p className="mt-6 font-display text-3xl font-medium tracking-tight">Same-Day Pickup</p>
                     </div>
                   </div>
                 </div>
@@ -314,7 +320,7 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-foreground bg-white px-6 py-16 sm:px-12 lg:px-20">
+      <footer className="border-t border-foreground bg-[#faf7f5] px-6 py-16 sm:px-12 lg:px-20">
         <div className="grid gap-16 lg:grid-cols-4">
           <div className="lg:col-span-1">
             <p className="font-display text-3xl tracking-tighter text-foreground">lashmealex</p>

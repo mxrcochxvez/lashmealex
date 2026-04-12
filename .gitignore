@@ -11,5 +11,12 @@ coverage
 .medusa
 apps/backend/.cache
 apps/backend/uploads
-
 .codex
+.continue
+.vscode
+.wrangler
+.vercel
+.pnpm-debug.log*
+*.tsbuildinfo
+next-env.d.ts
+playwright-*.png

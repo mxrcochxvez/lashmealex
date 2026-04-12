@@ -1,12 +1,12 @@
 'use server';
 
-import { desc, eq, like } from 'drizzle-orm';
+import { desc, eq, inArray } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
-import { orders, products } from '@/db/schema';
+import { orderItems, orders, products } from '@/db/schema';
 import { loginAdmin, logoutAdmin, requireAdmin } from '@/lib/admin-auth';
-import { getDb } from '@/lib/cloudflare';
+import { getDb, getProductImagePath, getProductImagesBucket } from '@/lib/cloudflare';
 
 function slugify(value: string) {
   return value
@@ -58,6 +58,97 @@ async function getUniqueVariantSlug(baseSlug: string) {
   }
 }
 
+async function getUniqueVariantSlugForUpdate(baseSlug: string, productId: string) {
+  const db = getDb();
+  let candidate = baseSlug;
+  let counter = 2;
+
+  for (;;) {
+    const existing = await db.query.products.findFirst({
+      where: eq(products.slug, candidate),
+    });
+
+    if (!existing || existing.id === productId) {
+      return candidate;
+    }
+
+    candidate = `${baseSlug}-${counter}`;
+    counter += 1;
+  }
+}
+
+function toCents(value: FormDataEntryValue | null) {
+  const amount = Number(value ?? 0);
+
+  return Number.isFinite(amount) ? Math.max(0, Math.round(amount * 100)) : 0;
+}
+
+function toNullableCents(value: FormDataEntryValue | null) {
+  const rawValue = String(value ?? '').trim();
+
+  if (!rawValue) {
+    return null;
+  }
+
+  const amount = Number(rawValue);
+
+  return Number.isFinite(amount) ? Math.max(0, Math.round(amount * 100)) : null;
+}
+
+function toInventoryCount(value: FormDataEntryValue | null) {
+  const amount = Number(value ?? 0);
+
+  return Number.isFinite(amount) ? Math.max(0, Math.floor(amount)) : 0;
+}
+
+function toSortOrder(value: FormDataEntryValue | null) {
+  const amount = Number(value ?? 0);
+
+  return Number.isFinite(amount) ? Math.floor(amount) : 0;
+}
+
+function getBooleanField(formData: FormData, key: string) {
+  return formData.get(key) === 'on';
+}
+
+function sanitizeFileName(fileName: string) {
+  const extensionIndex = fileName.lastIndexOf('.');
+  const baseName = extensionIndex >= 0 ? fileName.slice(0, extensionIndex) : fileName;
+  const extension = extensionIndex >= 0 ? fileName.slice(extensionIndex).toLowerCase() : '';
+  const sanitizedBase = slugify(baseName) || 'image';
+
+  return `${sanitizedBase}${extension}`;
+}
+
+async function uploadImageFile(file: File, objectKey: string) {
+  const bucket = getProductImagesBucket();
+  const bytes = await file.arrayBuffer();
+
+  await bucket.put(objectKey, bytes, {
+    httpMetadata: {
+      contentType: file.type || 'application/octet-stream',
+    },
+  });
+
+  return getProductImagePath(objectKey);
+}
+
+function revalidateCatalogPaths(parentSlug: string, variantSlug?: string, previousVariantSlug?: string) {
+  revalidatePath('/');
+  revalidatePath('/shop');
+  revalidatePath('/admin');
+  revalidatePath(`/admin/products/${parentSlug}`);
+  revalidatePath(`/products/${parentSlug}`);
+
+  if (variantSlug) {
+    revalidatePath(`/products/${variantSlug}`);
+  }
+
+  if (previousVariantSlug && previousVariantSlug !== variantSlug) {
+    revalidatePath(`/products/${previousVariantSlug}`);
+  }
+}
+
 /**
  * Logs the owner into the admin area.
  *
@@ -99,10 +190,11 @@ export async function createProductAction(formData: FormData) {
   const category = String(formData.get('category') ?? 'Lashes').trim() || 'Lashes';
   const imageUrl = String(formData.get('imageUrl') ?? '').trim();
   const initialVariantName = String(formData.get('initialVariantName') ?? '').trim();
-  const price = Number(formData.get('price') ?? 0);
-  const inventory = Number(formData.get('inventory') ?? 0);
-  const isFeatured = formData.get('isFeatured') === 'on';
-  const isActive = formData.get('isActive') === 'on';
+  const price = toCents(formData.get('price'));
+  const compareAtPrice = toNullableCents(formData.get('compareAtPrice'));
+  const inventory = toInventoryCount(formData.get('inventory'));
+  const isFeatured = getBooleanField(formData, 'isFeatured');
+  const isActive = getBooleanField(formData, 'isActive');
 
   if (!productName || !initialVariantName) {
     redirect('/admin');
@@ -124,8 +216,9 @@ export async function createProductAction(formData: FormData) {
     description,
     category,
     imageUrl: imageUrl || null,
-    price: Number.isFinite(price) ? Math.max(0, Math.round(price * 100)) : 0,
-    inventory: Number.isFinite(inventory) ? Math.max(0, Math.floor(inventory)) : 0,
+    price,
+    compareAtPrice,
+    inventory,
     isFeatured,
     isActive,
     sortOrder: 0,
@@ -154,10 +247,12 @@ export async function createVariantAction(formData: FormData) {
   const category = String(formData.get('category') ?? 'Lashes').trim() || 'Lashes';
   const imageUrl = String(formData.get('imageUrl') ?? '').trim();
   const variantName = String(formData.get('variantName') ?? '').trim();
-  const price = Number(formData.get('price') ?? 0);
-  const inventory = Number(formData.get('inventory') ?? 0);
-  const isFeatured = formData.get('isFeatured') === 'on';
-  const isActive = formData.get('isActive') === 'on';
+  const price = toCents(formData.get('price'));
+  const compareAtPrice = toNullableCents(formData.get('compareAtPrice'));
+  const inventory = toInventoryCount(formData.get('inventory'));
+  const sortOrderValue = String(formData.get('sortOrder') ?? '').trim();
+  const isFeatured = getBooleanField(formData, 'isFeatured');
+  const isActive = getBooleanField(formData, 'isActive');
 
   if (!parentProductId || !parentProductName || !parentSlug || !variantName) {
     return;
@@ -180,66 +275,269 @@ export async function createVariantAction(formData: FormData) {
     description,
     category,
     imageUrl: imageUrl || null,
-    price: Number.isFinite(price) ? Math.max(0, Math.round(price * 100)) : 0,
-    inventory: Number.isFinite(inventory) ? Math.max(0, Math.floor(inventory)) : 0,
+    price,
+    compareAtPrice,
+    inventory,
     isFeatured,
     isActive,
-    sortOrder: (lastVariant?.sortOrder ?? -1) + 1,
+    sortOrder: sortOrderValue ? toSortOrder(sortOrderValue) : (lastVariant?.sortOrder ?? -1) + 1,
     createdAt: new Date(),
     updatedAt: new Date(),
   });
 
-  revalidatePath('/');
-  revalidatePath('/shop');
-  revalidatePath('/admin');
-  revalidatePath(`/admin/products/${parentSlug}`);
+  revalidateCatalogPaths(parentSlug, variantSlug);
   redirect(`/admin/products/${parentSlug}`);
 }
 
 /**
- * Updates variant inventory and price directly in D1.
+ * Uploads a shared parent-product image into R2 and applies it to every variant.
+ *
+ * @param formData Submitted product-image upload form data.
+ * @throws Redirects back to the product editor after upload.
+ */
+export async function uploadProductImageAction(formData: FormData) {
+  await requireAdmin();
+
+  const parentProductId = String(formData.get('parentProductId') ?? '').trim();
+  const parentSlug = String(formData.get('parentSlug') ?? '').trim();
+  const upload = formData.get('image');
+
+  if (!parentProductId || !parentSlug || !(upload instanceof File) || upload.size === 0) {
+    redirect(`/admin/products/${parentSlug || ''}`);
+  }
+
+  if (!upload.type.startsWith('image/')) {
+    redirect(`/admin/products/${parentSlug}`);
+  }
+
+  const objectKey = `products/${parentSlug}/${Date.now()}-${sanitizeFileName(upload.name)}`;
+  const imageUrl = await uploadImageFile(upload, objectKey);
+  const db = getDb();
+
+  await db
+    .update(products)
+    .set({
+      imageUrl,
+      updatedAt: new Date(),
+    })
+    .where(eq(products.parentProductId, parentProductId));
+
+  revalidateCatalogPaths(parentSlug);
+  redirect(`/admin/products/${parentSlug}`);
+}
+
+/**
+ * Uploads a variant image into R2 and applies it to one specific variant.
+ *
+ * @param formData Submitted variant-image upload form data.
+ * @throws Redirects back to the product editor after upload.
+ */
+export async function uploadVariantImageAction(formData: FormData) {
+  await requireAdmin();
+
+  const productId = String(formData.get('productId') ?? '').trim();
+  const parentSlug = String(formData.get('parentSlug') ?? '').trim();
+  const variantSlug = String(formData.get('slug') ?? '').trim();
+  const upload = formData.get('image');
+
+  if (!productId || !parentSlug || !variantSlug || !(upload instanceof File) || upload.size === 0) {
+    redirect(`/admin/products/${parentSlug || ''}`);
+  }
+
+  if (!upload.type.startsWith('image/')) {
+    redirect(`/admin/products/${parentSlug}`);
+  }
+
+  const objectKey = `products/${parentSlug}/variants/${variantSlug}/${Date.now()}-${sanitizeFileName(upload.name)}`;
+  const imageUrl = await uploadImageFile(upload, objectKey);
+  const db = getDb();
+
+  await db
+    .update(products)
+    .set({
+      imageUrl,
+      updatedAt: new Date(),
+    })
+    .where(eq(products.id, productId));
+
+  revalidateCatalogPaths(parentSlug, variantSlug);
+  redirect(`/admin/products/${parentSlug}`);
+}
+
+/**
+ * Updates shared product details across every variant in a parent product.
  *
  * @param formData Submitted product-management form data.
  */
 export async function updateProductAction(formData: FormData) {
   await requireAdmin();
 
-  const productId = String(formData.get('productId') ?? '');
-  const slug = String(formData.get('slug') ?? '');
   const parentSlug = String(formData.get('parentSlug') ?? '');
-  const inventory = Number(formData.get('inventory') ?? 0);
-  const price = Number(formData.get('price') ?? 0);
-  const isActive = formData.get('isActive') === 'on';
-  const isFeatured = formData.get('isFeatured') === 'on';
+  const parentProductId = String(formData.get('parentProductId') ?? '');
+  const productName = String(formData.get('productName') ?? '').trim();
+  const description = String(formData.get('description') ?? '').trim();
+  const category = String(formData.get('category') ?? 'Lashes').trim() || 'Lashes';
+  const imageUrl = String(formData.get('imageUrl') ?? '').trim();
 
-  if (!productId) {
+  if (!parentSlug || !parentProductId || !productName) {
     return;
   }
 
+  const db = getDb();
+  const existingVariants = await db
+    .select({
+      id: products.id,
+      variantName: products.variantName,
+    })
+    .from(products)
+    .where(eq(products.parentProductId, parentProductId));
+
+  for (const variant of existingVariants) {
+    await db
+      .update(products)
+      .set({
+        parentProductName: productName,
+        name: `${productName} ${variant.variantName ?? ''}`.trim(),
+        description,
+        category,
+        imageUrl: imageUrl || null,
+        updatedAt: new Date(),
+      })
+      .where(eq(products.id, variant.id));
+  }
+
+  revalidateCatalogPaths(parentSlug);
+  redirect(`/admin/products/${parentSlug}`);
+}
+
+/**
+ * Updates a single product variant in D1.
+ *
+ * @param formData Submitted variant-management form data.
+ */
+export async function updateVariantAction(formData: FormData) {
+  await requireAdmin();
+
+  const productId = String(formData.get('productId') ?? '').trim();
+  const slug = String(formData.get('slug') ?? '').trim();
+  const parentSlug = String(formData.get('parentSlug') ?? '').trim();
+  const parentProductName = String(formData.get('parentProductName') ?? '').trim();
+  const variantName = String(formData.get('variantName') ?? '').trim();
+  const description = String(formData.get('description') ?? '').trim();
+  const category = String(formData.get('category') ?? 'Lashes').trim() || 'Lashes';
+  const imageUrl = String(formData.get('imageUrl') ?? '').trim();
+  const price = toCents(formData.get('price'));
+  const compareAtPrice = toNullableCents(formData.get('compareAtPrice'));
+  const inventory = toInventoryCount(formData.get('inventory'));
+  const sortOrder = toSortOrder(formData.get('sortOrder'));
+  const isActive = getBooleanField(formData, 'isActive');
+  const isFeatured = getBooleanField(formData, 'isFeatured');
+
+  if (!productId || !parentSlug || !parentProductName || !variantName) {
+    return;
+  }
+
+  const variantSlug = await getUniqueVariantSlugForUpdate(
+    `${parentSlug}-${slugify(variantName)}`,
+    productId,
+  );
   const db = getDb();
 
   await db
     .update(products)
     .set({
-      inventory: Number.isFinite(inventory) ? Math.max(0, Math.floor(inventory)) : 0,
-      price: Number.isFinite(price) ? Math.max(0, Math.round(price * 100)) : 0,
+      slug: variantSlug,
+      name: `${parentProductName} ${variantName}`.trim(),
+      variantName,
+      description,
+      category,
+      imageUrl: imageUrl || null,
+      price,
+      compareAtPrice,
+      inventory,
+      sortOrder,
       isActive,
       isFeatured,
       updatedAt: new Date(),
     })
     .where(eq(products.id, productId));
 
-  revalidatePath('/');
-  revalidatePath('/shop');
-  revalidatePath('/admin');
+  revalidateCatalogPaths(parentSlug, variantSlug, slug);
+  redirect(`/admin/products/${parentSlug}`);
+}
 
-  if (parentSlug) {
-    revalidatePath(`/admin/products/${parentSlug}`);
+/**
+ * Deletes a parent product and all of its variants.
+ *
+ * @param formData Submitted product-delete form data.
+ * @throws Redirects back to the admin dashboard.
+ */
+export async function deleteProductAction(formData: FormData) {
+  await requireAdmin();
+
+  const parentProductId = String(formData.get('parentProductId') ?? '').trim();
+  const parentSlug = String(formData.get('parentSlug') ?? '').trim();
+
+  if (!parentProductId || !parentSlug) {
+    return;
   }
 
-  if (slug) {
-    revalidatePath(`/products/${slug}`);
+  const db = getDb();
+  const variants = await db
+    .select({ id: products.id, slug: products.slug })
+    .from(products)
+    .where(eq(products.parentProductId, parentProductId));
+
+  if (variants.length === 0) {
+    redirect('/admin');
   }
+
+  await db.delete(orderItems).where(inArray(orderItems.productId, variants.map((variant) => variant.id)));
+  await db.delete(products).where(eq(products.parentProductId, parentProductId));
+
+  revalidateCatalogPaths(parentSlug);
+
+  for (const variant of variants) {
+    revalidatePath(`/products/${variant.slug}`);
+  }
+
+  redirect('/admin');
+}
+
+/**
+ * Deletes a single variant. If it is the last remaining variant, the full product is removed.
+ *
+ * @param formData Submitted variant-delete form data.
+ * @throws Redirects after deletion.
+ */
+export async function deleteVariantAction(formData: FormData) {
+  await requireAdmin();
+
+  const productId = String(formData.get('productId') ?? '').trim();
+  const slug = String(formData.get('slug') ?? '').trim();
+  const parentProductId = String(formData.get('parentProductId') ?? '').trim();
+  const parentSlug = String(formData.get('parentSlug') ?? '').trim();
+
+  if (!productId || !parentProductId || !parentSlug) {
+    return;
+  }
+
+  const db = getDb();
+  const siblingVariants = await db
+    .select({ id: products.id })
+    .from(products)
+    .where(eq(products.parentProductId, parentProductId));
+
+  await db.delete(orderItems).where(eq(orderItems.productId, productId));
+  await db.delete(products).where(eq(products.id, productId));
+
+  if (siblingVariants.length <= 1) {
+    revalidateCatalogPaths(parentSlug, undefined, slug);
+    redirect('/admin');
+  }
+
+  revalidateCatalogPaths(parentSlug, undefined, slug);
+  redirect(`/admin/products/${parentSlug}`);
 }
 
 /**

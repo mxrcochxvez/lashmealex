@@ -9,3 +9,7 @@ database_name = "lashmealex-d1"
 database_id = "00000000-0000-0000-0000-000000000000"
 preview_database_id = "DB"
 migrations_dir = "drizzle/migrations"
+
+[[r2_buckets]]
+binding = "PRODUCT_IMAGES"
+bucket_name = "product-images"

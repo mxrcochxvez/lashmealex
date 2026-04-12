@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { logoutAction, updateOrderAction } from './actions';
+import { createProductAction, logoutAction, updateOrderAction } from './actions';
 import { requireAdmin } from '@/lib/admin-auth';
 import { getAdminCatalogStats, listAdminProductGroups } from '@/lib/catalog';
 import { formatUsdFromCents } from '@/lib/money';
@@ -94,6 +94,142 @@ export default async function AdminPage() {
               Products
             </h2>
           </div>
+
+          <form
+            action={createProductAction}
+            className="grid gap-5 border border-foreground bg-white p-6 lg:grid-cols-[1.2fr_1fr_1fr]"
+          >
+            <div className="space-y-4">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-pink-dark">
+                  Create Product
+                </p>
+                <p className="mt-3 max-w-xl text-sm text-muted">
+                  Add a new parent product with its first variant. Shared product details can be
+                  edited later from the dedicated product editor.
+                </p>
+              </div>
+
+              <label className="space-y-2">
+                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
+                  Product Name
+                </span>
+                <input
+                  type="text"
+                  name="productName"
+                  required
+                  className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none"
+                />
+              </label>
+
+              <label className="space-y-2">
+                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
+                  Description
+                </span>
+                <textarea
+                  name="description"
+                  rows={5}
+                  className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none"
+                />
+              </label>
+            </div>
+
+            <div className="space-y-4">
+              <label className="space-y-2">
+                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
+                  Category
+                </span>
+                <input
+                  type="text"
+                  name="category"
+                  defaultValue="Lashes"
+                  className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none"
+                />
+              </label>
+
+              <label className="space-y-2">
+                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
+                  Product Image URL
+                </span>
+                <input
+                  type="url"
+                  name="imageUrl"
+                  className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none"
+                />
+              </label>
+
+              <label className="space-y-2">
+                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
+                  First Variant Name
+                </span>
+                <input
+                  type="text"
+                  name="initialVariantName"
+                  required
+                  placeholder="CC Curl 0.03"
+                  className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none"
+                />
+              </label>
+            </div>
+
+            <div className="space-y-4">
+              <label className="space-y-2">
+                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
+                  Price
+                </span>
+                <input
+                  type="number"
+                  name="price"
+                  min="0"
+                  step="0.01"
+                  required
+                  className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none"
+                />
+              </label>
+
+              <label className="space-y-2">
+                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
+                  Compare-At Price
+                </span>
+                <input
+                  type="number"
+                  name="compareAtPrice"
+                  min="0"
+                  step="0.01"
+                  className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none"
+                />
+              </label>
+
+              <label className="space-y-2">
+                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
+                  Starting Inventory
+                </span>
+                <input
+                  type="number"
+                  name="inventory"
+                  min="0"
+                  defaultValue="0"
+                  required
+                  className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none"
+                />
+              </label>
+
+              <div className="space-y-3 border border-line p-4">
+                <label className="flex items-center gap-3 text-sm text-foreground">
+                  <input type="checkbox" name="isActive" defaultChecked />
+                  Active on storefront
+                </label>
+                <label className="flex items-center gap-3 text-sm text-foreground">
+                  <input type="checkbox" name="isFeatured" defaultChecked />
+                  Featured on homepage
+                </label>
+              </div>
+
+              <button type="submit" className="btn-primary w-full">
+                Create Product
+              </button>
+            </div>
+          </form>
 
           <div className="space-y-4">
             {productGroups.map((product) => (

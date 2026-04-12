@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     template: "%s | Lashmealex Shop",
   },
   description:
-    "A branded storefront for Lashmealex beauty products with local pickup and a booking handoff to the salon's GlossGenius site.",
+    "Shop professional lashes, adhesives, aftercare, and beauty tools from Lashmealex. Curated by a Fresno lash artist.",
   keywords: [
     "lashmealex",
     "lashes",
@@ -31,14 +31,14 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Lashmealex Shop",
     description:
-      "Shop Lashmealex beauty products, pickup locally in Fresno, and book salon services through GlossGenius.",
+      "Shop professional lashes, adhesives, aftercare, and beauty tools. Curated by a Fresno lash artist.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "Lashmealex Shop",
     description:
-      "Shop beauty products and follow the booking handoff to the existing Lashmealex salon site.",
+      "Professional lashes, adhesives, aftercare, and beauty essentials from Lashmealex.",
   },
   alternates: {
     canonical: "/",

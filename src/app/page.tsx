@@ -41,8 +41,8 @@ export default async function Home() {
                     Your Lash <br />Essentials.
                   </h1>
                   <p className="mt-10 max-w-xl text-lg leading-relaxed text-muted">
-                    A custom Cloudflare-powered storefront with variant-level inventory, so every
-                    lash tray has its own card, stock count, and future order history.
+                    Professional-grade lash extensions, adhesives, and aftercare — hand-picked
+                    and curated by a Fresno lash artist for flawless results every time.
                   </p>
 
                   <div className="mt-14 flex flex-col gap-6 sm:flex-row">
@@ -55,7 +55,7 @@ export default async function Home() {
                   </div>
 
                   <div className="mt-20 grid gap-12 border-t border-line pt-12 sm:grid-cols-3">
-                    {["Variant-Level Stock", "Cloudflare D1", "Same-Day Ready"].map((item) => (
+                    {["Premium Quality", "Salon Curated", "Same-Day Pickup"].map((item) => (
                       <div key={item} className="space-y-3">
                         <p className="text-[10px] font-bold uppercase tracking-widest text-pink-dark">—</p>
                         <p className="text-[11px] font-bold uppercase leading-relaxed tracking-wider text-muted">
@@ -74,11 +74,11 @@ export default async function Home() {
                       Featured
                     </p>
                     <h2 className="mt-8 font-display text-4xl font-medium leading-tight tracking-tight text-foreground">
-                      Lash Extensions. <br />Each Variant, Individually Stocked.
+                      Lash Extensions. <br />Every Size & Curl Available.
                     </h2>
                     <p className="mt-8 text-sm leading-relaxed text-muted">
-                      The storefront now treats each size and curl combination as its own sellable
-                      item, which keeps inventory accurate for the owner.
+                      Browse our full range of curls, diameters, and lengths — each one stocked
+                      individually so you always know exactly what&apos;s available.
                     </p>
                     <Link href="/shop" className="btn-ghost mt-10 w-fit">
                       View Details
@@ -108,8 +108,7 @@ export default async function Home() {
                   Best Sellers.
                 </h2>
                 <p className="mt-8 text-lg text-muted">
-                  Variant cards mapped directly from D1 so the storefront and owner dashboard stay
-                  in sync.
+                  Our most-loved lash trays, chosen by clients and restocked weekly.
                 </p>
               </div>
 
@@ -171,14 +170,14 @@ export default async function Home() {
             <FadeIn className="mb-20 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-2xl">
                 <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-pink-dark">
-                  Catalog
+                  Just Dropped
                 </p>
                 <h2 className="mt-8 font-display text-[3.5rem] font-medium leading-none tracking-tighter text-foreground sm:text-[4.5rem]">
-                  Variant Grid.
+                  New Arrivals.
                 </h2>
                 <p className="mt-8 text-lg text-muted">
-                  Every seeded lash extension variant is now available as a separate storefront
-                  record.
+                  The latest additions to our lash collection — fresh curls, new lengths, and
+                  restocked favorites.
                 </p>
               </div>
 
@@ -203,8 +202,8 @@ export default async function Home() {
                     Visit the Salon.
                   </h2>
                   <p className="mt-10 max-w-xl text-lg leading-relaxed text-muted">
-                    Book a lash appointment or pick up your order in person. The storefront and
-                    future admin dashboard are built around same-day pickup workflows.
+                    Book a lash appointment or swing by for same-day order pickup.
+                    We&apos;re open Wednesday through Saturday — walk-ins welcome.
                   </p>
 
                   <div className="mt-14">

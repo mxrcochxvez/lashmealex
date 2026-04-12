@@ -20,3 +20,4 @@ apps/backend/uploads
 *.tsbuildinfo
 next-env.d.ts
 playwright-*.png
+.open-next

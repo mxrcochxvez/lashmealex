@@ -43,8 +43,8 @@ export default async function AdminPage() {
               Inventory + Orders
             </h1>
             <p className="mt-5 max-w-2xl text-sm leading-relaxed text-muted">
-              This dashboard manages the Cloudflare D1 catalog directly. Each lash variant is its
-              own storefront record, so pricing and inventory stay aligned with what customers see.
+              Manage your catalog, pricing, and inventory from one place. Each lash variant is its
+              own storefront record, so what you update here is what customers see.
             </p>
           </div>
 
@@ -276,8 +276,8 @@ export default async function AdminPage() {
 
           {orders.length === 0 ? (
             <div className="border border-dashed border-foreground bg-white p-10 text-sm text-muted">
-              No orders have been recorded yet. Once checkout is added, this table can track paid
-              orders and fulfillment directly from D1.
+              No orders have been recorded yet. Once checkout is live, this table will track
+              payments, fulfillment status, and pickup readiness.
             </div>
           ) : (
             <div className="space-y-4">

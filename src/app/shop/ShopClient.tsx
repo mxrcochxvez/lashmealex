@@ -154,8 +154,8 @@ export default function ShopClient({
                 The Collection.
               </h1>
               <p className="max-w-xl text-lg leading-relaxed text-muted">
-                Each lash variant is stocked and sold as its own storefront item, so the owner can
-                manage inventory at the exact tray level.
+                Professional lash extensions, aftercare, and beauty tools — browse by curl,
+                diameter, and length to find your perfect match.
               </p>
             </div>
           </section>
@@ -189,9 +189,9 @@ export default function ShopClient({
                   {filteredProducts.length} Results
                 </p>
                 <div className="flex items-center gap-4">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted">Catalog:</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted">Sort by:</span>
                   <span className="text-[10px] font-bold uppercase tracking-widest text-foreground">
-                    Cloudflare D1
+                    Best Selling
                   </span>
                 </div>
               </div>

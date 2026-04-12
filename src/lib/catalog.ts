@@ -122,7 +122,7 @@ function groupProducts(rows: Array<typeof products.$inferSelect>): StoreProduct[
       reviewCount: 0,
       features: [
         "Salon-curated lash trays",
-        "Variant-level stock tracked in Cloudflare D1",
+        "Real-time stock — what you see is what we have",
         "Choose your exact size and curl on the product page",
       ],
       variants,

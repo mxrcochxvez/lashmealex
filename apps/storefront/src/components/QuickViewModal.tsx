@@ -9,6 +9,7 @@ import Link from 'next/link';
 
 interface Product {
   id: string;
+  slug?: string;
   name: string;
   price: number;
   compareAtPrice?: number;
@@ -48,7 +49,7 @@ export default function QuickViewModal({
 
   const images = product.images || [];
   const hasMultipleImages = images.length > 1;
-  const slug = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  const slug = product.slug ?? product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   const productUrl = `/products/${slug}`;
 
   const handleAddToCart = async () => {

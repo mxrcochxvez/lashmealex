@@ -6,12 +6,15 @@ import { Heart, ShoppingCart, Star, ChevronLeft, ChevronRight, Minus, Plus, Truc
 import { clsx } from 'clsx';
 import Header from '../../../components/Header';
 import { LoadingButton, FadeIn } from '../../../components/LoadingStates';
-import ProductCard from '../../../components/ProductCard';
+import ProductGridWithQuickView from '../../../components/ProductGridWithQuickView';
+import type { StoreProduct } from '@/lib/catalog';
 
 interface Product {
   id: string;
   slug: string;
+  parentProductName: string;
   name: string;
+  variantName?: string;
   price: number;
   compareAtPrice?: number;
   description: string;
@@ -26,9 +29,10 @@ interface Product {
 
 interface ProductDetailClientProps {
   product: Product;
+  relatedProducts: StoreProduct[];
 }
 
-export default function ProductDetailClient({ product }: ProductDetailClientProps) {
+export default function ProductDetailClient({ product, relatedProducts }: ProductDetailClientProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
@@ -60,34 +64,6 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
   const incrementQuantity = () => setQuantity(prev => prev + 1);
   const decrementQuantity = () => setQuantity(prev => Math.max(1, prev - 1));
-
-  // Mock related products
-  const relatedProducts = [
-    {
-      id: '2',
-      name: 'Pro Bond + Seal Duo',
-      price: 24,
-      description: 'Salon-grade hold and clean finish',
-      category: 'Adhesives',
-      inStock: true
-    },
-    {
-      id: '3',
-      name: 'Lash Care Essentials Kit',
-      price: 32,
-      description: 'Brush, cleanser, and aftercare for extensions',
-      category: 'Aftercare',
-      inStock: true
-    },
-    {
-      id: '4',
-      name: 'Glow Up Brow + Lash Bundle',
-      price: 45,
-      description: 'Complete brow and lash routine in one box',
-      category: 'Kits',
-      inStock: true
-    }
-  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -195,6 +171,9 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                   <h1 className="mt-2 font-display text-3xl font-semibold text-foreground lg:text-5xl">
                     {product.name}
                   </h1>
+                  <p className="mt-3 text-sm uppercase tracking-[0.24em] text-muted">
+                    {product.parentProductName}
+                  </p>
                 </div>
 
                 {/* Rating */}
@@ -359,14 +338,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
           </FadeIn>
 
           <FadeIn delay={0.2}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {relatedProducts.map((relatedProduct) => (
-                <ProductCard
-                  key={relatedProduct.id}
-                  product={relatedProduct}
-                />
-              ))}
-            </div>
+            <ProductGridWithQuickView products={relatedProducts} columns={4} />
           </FadeIn>
         </section>
       </main>

@@ -8,6 +8,7 @@ import { clsx } from 'clsx';
 interface ProductCardProps {
   product: {
     id: string;
+    slug: string;
     name: string;
     price: number;
     compareAtPrice?: number;

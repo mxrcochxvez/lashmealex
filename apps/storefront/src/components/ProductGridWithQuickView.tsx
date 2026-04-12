@@ -7,6 +7,7 @@ import { FadeIn } from './LoadingStates';
 
 interface Product {
   id: string;
+  slug: string;
   name: string;
   price: number;
   compareAtPrice?: number;

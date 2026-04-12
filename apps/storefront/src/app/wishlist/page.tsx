@@ -12,6 +12,7 @@ import { clsx } from 'clsx';
 const wishlistProducts = [
   {
     id: '1',
+    slug: 'lashmealex-luxe-strip-set',
     name: 'Lashmealex Luxe Strip Set',
     price: 18,
     compareAtPrice: 24,
@@ -23,6 +24,7 @@ const wishlistProducts = [
   },
   {
     id: '3',
+    slug: 'lash-care-essentials-kit',
     name: 'Lash Care Essentials Kit',
     price: 32,
     compareAtPrice: 40,
@@ -34,6 +36,7 @@ const wishlistProducts = [
   },
   {
     id: '5',
+    slug: 'magnetic-lash-collection',
     name: 'Magnetic Lash Collection',
     price: 28,
     description: 'Easy-to-apply magnetic lashes',

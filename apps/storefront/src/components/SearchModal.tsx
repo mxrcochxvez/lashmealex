@@ -9,8 +9,19 @@ interface SearchModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSearch: (query: string) => void;
+  products?: SearchProduct[];
   recentSearches?: string[];
   popularSearches?: string[];
+}
+
+interface SearchProduct {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  image?: string;
+  url?: string;
+  slug?: string;
 }
 
 interface SearchResult {
@@ -26,6 +37,7 @@ export default function SearchModal({
   isOpen,
   onClose,
   onSearch,
+  products = [],
   recentSearches = [],
   popularSearches = [
     'strip lashes',
@@ -40,47 +52,29 @@ export default function SearchModal({
   const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Mock search function - replace with actual API call
   const performSearch = async (searchQuery: string) => {
     setIsLoading(true);
-    
-    // Simulate API delay
+
     await new Promise(resolve => setTimeout(resolve, 500));
-    
+
     if (searchQuery.trim()) {
-      // Mock results - replace with actual search logic
-      const mockResults: SearchResult[] = [
-        {
-          id: '1',
-          name: 'Lashmealex Luxe Strip Set',
-          category: 'Lashes',
-          price: 18,
-          url: '/products/luxe-strip-set'
-        },
-        {
-          id: '2',
-          name: 'Pro Bond Adhesive',
-          category: 'Adhesives',
-          price: 24,
-          url: '/products/pro-bond'
-        },
-        {
-          id: '3',
-          name: 'Magnetic Lash Kit',
-          category: 'Lashes',
-          price: 32,
-          url: '/products/magnetic-kit'
-        }
-      ].filter(product => 
+      const filteredResults = products.filter((product) =>
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.category.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      
-      setResults(mockResults);
+      ).map((product) => ({
+        id: product.id,
+        name: product.name,
+        category: product.category,
+        price: product.price,
+        image: product.image,
+        url: product.url ?? (product.slug ? `/products/${product.slug}` : '/shop'),
+      }));
+
+      setResults(filteredResults);
     } else {
       setResults([]);
     }
-    
+
     setIsLoading(false);
   };
 
@@ -112,7 +106,6 @@ export default function SearchModal({
 
   const handleResultClick = (result: SearchResult) => {
     onClose();
-    // Navigate to product page
     window.location.href = result.url;
   };
 

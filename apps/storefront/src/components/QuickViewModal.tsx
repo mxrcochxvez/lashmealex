@@ -84,13 +84,17 @@ export default function QuickViewModal({
 
           {/* Modal */}
           <motion.div
-            className="fixed inset-4 lg:inset-8 z-modal flex items-center justify-center"
+            className="fixed inset-4 lg:inset-8 z-modal flex items-center justify-center p-4 lg:p-0"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            onClick={onClose}
           >
-            <div className="glass-heavy flex max-h-full w-full max-w-7xl flex-col overflow-hidden rounded-[40px] lg:flex-row">
+            <div 
+              className="relative glass-heavy flex max-h-full w-full max-w-7xl flex-col overflow-hidden rounded-[40px] lg:flex-row"
+              onClick={(e) => e.stopPropagation()}
+            >
               {/* Close Button */}
               <button
                 onClick={onClose}

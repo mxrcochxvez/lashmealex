@@ -9,7 +9,6 @@ interface ShopPageProps {
 }
 
 export const dynamic = 'force-dynamic';
-export const runtime = 'edge';
 
 export default async function ShopPage({ searchParams }: ShopPageProps) {
   const resolvedSearchParams = await searchParams;

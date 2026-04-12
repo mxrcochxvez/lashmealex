@@ -16,7 +16,6 @@ import { formatUsdFromCents } from '@/lib/money';
 import { getAdminProductGroupBySlug } from '@/lib/catalog';
 
 export const dynamic = 'force-dynamic';
-export const runtime = 'edge';
 
 function formatDate(value: Date | null) {
   if (!value) {

@@ -2,8 +2,6 @@ import { notFound } from 'next/navigation';
 
 import { getProductImagesBucket } from '@/lib/cloudflare';
 
-export const runtime = 'edge';
-
 interface ProductImageRouteProps {
   params: Promise<{
     key: string[];

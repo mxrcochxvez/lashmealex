@@ -7,7 +7,6 @@ import { formatUsdFromCents } from '@/lib/money';
 import { getAdminOrderStats, listAdminOrders } from '@/lib/orders';
 
 export const dynamic = 'force-dynamic';
-export const runtime = 'edge';
 
 function formatDate(value: Date | null) {
   if (!value) {

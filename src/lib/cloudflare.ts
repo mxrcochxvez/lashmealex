@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getRequestContext } from "@cloudflare/next-on-pages";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 import { createDb } from "@/db";
 
@@ -23,7 +23,7 @@ declare global {
  * @throws When the request is not running with a configured `DB` binding.
  */
 export function getDb() {
-  const context = getRequestContext();
+  const context = getCloudflareContext();
 
   if (!context.env.DB) {
     throw new Error("Cloudflare D1 binding `DB` is not available for this request.");
@@ -42,7 +42,7 @@ export function getDb() {
  * @throws When the request is not running with a configured `PRODUCT_IMAGES` binding.
  */
 export function getProductImagesBucket() {
-  const context = getRequestContext();
+  const context = getCloudflareContext();
 
   if (!context.env.PRODUCT_IMAGES) {
     throw new Error("Cloudflare R2 binding `PRODUCT_IMAGES` is not available for this request.");

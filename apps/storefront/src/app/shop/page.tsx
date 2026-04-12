@@ -247,7 +247,7 @@ export default function ShopPage() {
           <div className="flex-1">
             {/* Results Header */}
             <FadeIn delay={0.2}>
-              <div className="mb-12 flex flex-col gap-8 border-b border-foreground pb-8 sm:flex-row sm:items-center sm:justify-between">
+              <div className="mb-12 flex flex-col gap-8 border-b border-line pb-8 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-xs font-bold uppercase tracking-widest text-muted">
                   {filteredProducts.length} Results
                 </p>
@@ -264,7 +264,7 @@ export default function ShopPage() {
             </FadeIn>
 
             {/* Products */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {isLoading ? (
                 Array.from({ length: 6 }).map((_, index) => (
                   <ProductCardSkeleton key={index} />

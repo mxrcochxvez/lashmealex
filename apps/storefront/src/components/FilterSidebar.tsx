@@ -23,24 +23,11 @@ interface FilterSidebarProps {
 }
 
 const categories = [
-  { id: 'lashes', label: 'Lashes', count: 24 },
-  { id: 'adhesives', label: 'Adhesives', count: 8 },
-  { id: 'tools', label: 'Tools', count: 12 },
-  { id: 'aftercare', label: 'Aftercare', count: 6 },
-  { id: 'kits', label: 'Kits', count: 4 }
-];
-
-const lashTypes = [
-  { id: 'strip', label: 'Strip Lashes', count: 18 },
-  { id: 'individual', label: 'Individual', count: 12 },
-  { id: 'cluster', label: 'Cluster', count: 8 },
-  { id: 'magnetic', label: 'Magnetic', count: 6 }
-];
-
-const brands = [
-  { id: 'lashmealex', label: 'Lashmealex', count: 32 },
-  { id: 'pro-lash', label: 'Pro Lash', count: 8 },
-  { id: 'glow-up', label: 'Glow Up', count: 4 }
+  { id: 'lashes', label: 'Lashes', count: 3 },
+  { id: 'adhesives', label: 'Adhesives', count: 1 },
+  { id: 'tools', label: 'Tools', count: 1 },
+  { id: 'aftercare', label: 'Aftercare', count: 2 },
+  { id: 'kits', label: 'Kits', count: 1 }
 ];
 
 interface FilterSectionProps {
@@ -139,26 +126,6 @@ export default function FilterSidebar({
     onFiltersChange({ ...filters, category: newCategories });
   };
 
-  const handleLashTypeChange = (typeId: string, checked: boolean) => {
-    const newTypes = checked
-      ? [...filters.lashType, typeId]
-      : filters.lashType.filter(id => id !== typeId);
-    onFiltersChange({ ...filters, lashType: newTypes });
-  };
-
-  const handleBrandChange = (brandId: string, checked: boolean) => {
-    const newBrands = checked
-      ? [...filters.brand, brandId]
-      : filters.brand.filter(id => id !== brandId);
-    onFiltersChange({ ...filters, brand: newBrands });
-  };
-
-  const handlePriceRangeChange = (index: 0 | 1, value: number) => {
-    const newRange: [number, number] = [...filters.priceRange];
-    newRange[index] = value;
-    onFiltersChange({ ...filters, priceRange: newRange });
-  };
-
   const clearAllFilters = () => {
     onFiltersChange({
       category: [],
@@ -172,10 +139,6 @@ export default function FilterSidebar({
 
   const hasActiveFilters = 
     filters.category.length > 0 ||
-    filters.lashType.length > 0 ||
-    filters.brand.length > 0 ||
-    filters.priceRange[0] > 0 ||
-    filters.priceRange[1] < maxPrice ||
     filters.inStock ||
     filters.onSale;
 
@@ -235,57 +198,6 @@ export default function FilterSidebar({
                   checked={filters.category.includes(category.id)}
                   onChange={(checked) => handleCategoryChange(category.id, checked)}
                   count={category.count}
-                />
-              ))}
-            </FilterSection>
-
-            <FilterSection title="Price Range">
-              <div className="space-y-6">
-                <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-foreground">
-                  <span>From: ${filters.priceRange[0]}</span>
-                  <span>To: ${filters.priceRange[1]}</span>
-                </div>
-                <div className="space-y-4">
-                  <input
-                    type="range"
-                    min="0"
-                    max={maxPrice}
-                    value={filters.priceRange[0]}
-                    onChange={(e) => handlePriceRangeChange(0, Number(e.target.value))}
-                    className="w-full accent-foreground h-1 bg-line appearance-none cursor-pointer"
-                  />
-                  <input
-                    type="range"
-                    min="0"
-                    max={maxPrice}
-                    value={filters.priceRange[1]}
-                    onChange={(e) => handlePriceRangeChange(1, Number(e.target.value))}
-                    className="w-full accent-foreground h-1 bg-line appearance-none cursor-pointer"
-                  />
-                </div>
-              </div>
-            </FilterSection>
-
-            <FilterSection title="Lash Type">
-              {lashTypes.map((type) => (
-                <Checkbox
-                  key={type.id}
-                  label={type.label}
-                  checked={filters.lashType.includes(type.id)}
-                  onChange={(checked) => handleLashTypeChange(type.id, checked)}
-                  count={type.count}
-                />
-              ))}
-            </FilterSection>
-
-            <FilterSection title="Brand">
-              {brands.map((brand) => (
-                <Checkbox
-                  key={brand.id}
-                  label={brand.label}
-                  checked={filters.brand.includes(brand.id)}
-                  onChange={(checked) => handleBrandChange(brand.id, checked)}
-                  count={brand.count}
                 />
               ))}
             </FilterSection>

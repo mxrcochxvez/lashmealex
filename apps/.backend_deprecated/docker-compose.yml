@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: lashmealex_postgres_db
+    restart: always
+    environment:
+      # These are placeholders. We will use them to populate the .env file later.
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      # Map internal container port 5432 to host port 5432
+      - "5432:5432"
+    volumes:
+      # Persist data so it's not lost when the container stops
+      - pg_data:/var/lib/postgresql/data
+
+volumes:
+  pg_data:

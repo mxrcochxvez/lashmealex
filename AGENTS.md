@@ -41,3 +41,6 @@ This section dictates how AI agents should operate to maintain code integrity.
 
 ### C. Handling Ambiguity
 *   If the context is insufficient to complete a task safely, the agent must halt execution and ask a clarifying question, citing the ambiguity. **Guessing is prohibited.**
+
+### D. Deployment Restrictions
+*   **Never Deploy:** An AI agent must **never** deploy the application or infrastructure on behalf of the user. All deployments must be explicitly initiated and handled by the user.

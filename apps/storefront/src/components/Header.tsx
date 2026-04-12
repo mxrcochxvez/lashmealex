@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Search, ShoppingBag, Menu, X, Heart, User, MapPin } from 'lucide-react';
+import { Search, ShoppingBag, Menu, X, Heart, User, Calendar } from 'lucide-react';
 import { clsx } from 'clsx';
 
 interface HeaderProps {
@@ -100,6 +100,8 @@ export default function Header({
             ))}
           </nav>
 
+          <div className="hidden lg:block h-6 w-px bg-line mx-2" aria-hidden="true" />
+
           <div className="flex items-center gap-1 sm:gap-2">
             <button
               onClick={onSearchToggle}
@@ -152,7 +154,7 @@ export default function Header({
               rel="noreferrer"
               className="hidden items-center gap-2 border border-foreground bg-transparent px-5 py-2.5 text-[10px] font-bold uppercase tracking-widest text-foreground transition-all hover:bg-foreground hover:text-background sm:inline-flex"
             >
-              <MapPin size={13} />
+              <Calendar size={13} />
               Book
             </a>
           </div>

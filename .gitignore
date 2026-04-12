@@ -11,3 +11,5 @@ coverage
 .medusa
 apps/backend/.cache
 apps/backend/uploads
+
+.codex

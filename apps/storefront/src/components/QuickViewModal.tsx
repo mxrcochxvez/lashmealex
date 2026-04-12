@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Heart, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, Heart, Star, ChevronLeft, ChevronRight, Share2, Check } from 'lucide-react';
 import { clsx } from 'clsx';
 import { LoadingButton } from './LoadingStates';
+import Link from 'next/link';
 
 interface Product {
   id: string;
@@ -41,11 +42,14 @@ export default function QuickViewModal({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   if (!product) return null;
 
   const images = product.images || [];
   const hasMultipleImages = images.length > 1;
+  const slug = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  const productUrl = `/products/${slug}`;
 
   const handleAddToCart = async () => {
     setIsAddingToCart(true);
@@ -294,6 +298,28 @@ export default function QuickViewModal({
                         <div className="h-1 w-1 rounded-full bg-pink" />
                         Ready for Fresno pickup in 2-4 hours
                         <div className="h-1 w-1 rounded-full bg-pink" />
+                      </div>
+
+                      <div className="flex items-center gap-3 pt-2">
+                        <Link
+                          href={productUrl}
+                          className="flex-1 btn-secondary py-4 text-center text-[10px]"
+                          onClick={onClose}
+                        >
+                          View Full Details
+                        </Link>
+                        <button
+                          onClick={async () => {
+                            const fullUrl = `${window.location.origin}${productUrl}`;
+                            await navigator.clipboard.writeText(fullUrl);
+                            setCopied(true);
+                            setTimeout(() => setCopied(false), 2000);
+                          }}
+                          className="flex h-[52px] w-[52px] items-center justify-center border border-foreground text-foreground transition-all hover:bg-foreground hover:text-background"
+                          aria-label="Share product"
+                        >
+                          {copied ? <Check size={16} /> : <Share2 size={16} />}
+                        </button>
                       </div>
                     </div>
                   </div>

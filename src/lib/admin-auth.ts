@@ -1,14 +1,17 @@
 import "server-only";
 
-import { createHash, timingSafeEqual } from "node:crypto";
-
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 const ADMIN_COOKIE_NAME = "lashmealex_admin_session";
 
-function sha256(value: string): Buffer {
-  return createHash("sha256").update(value).digest();
+async function sha256Hex(value: string): Promise<string> {
+  const encoded = new TextEncoder().encode(value);
+  const digest = await crypto.subtle.digest("SHA-256", encoded);
+
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 function getAdminPassword(): string | null {
@@ -19,8 +22,8 @@ function getSessionSecret(): string | null {
   return process.env.ADMIN_SESSION_SECRET ?? null;
 }
 
-function buildSessionToken(password: string, secret: string): string {
-  return createHash("sha256").update(`${password}:${secret}`).digest("hex");
+async function buildSessionToken(password: string, secret: string): Promise<string> {
+  return sha256Hex(`${password}:${secret}`);
 }
 
 /**
@@ -43,13 +46,9 @@ export async function isAdminAuthenticated(): Promise<boolean> {
     return false;
   }
 
-  const expected = buildSessionToken(password, secret);
+  const expected = await buildSessionToken(password, secret);
 
-  try {
-    return timingSafeEqual(sha256(token), sha256(expected));
-  } catch {
-    return false;
-  }
+  return token === expected;
 }
 
 /**
@@ -79,18 +78,15 @@ export async function loginAdmin(passwordInput: string): Promise<boolean> {
     return false;
   }
 
-  try {
-    const matches = timingSafeEqual(sha256(passwordInput), sha256(password));
+  const passwordHash = await sha256Hex(password);
+  const inputHash = await sha256Hex(passwordInput);
 
-    if (!matches) {
-      return false;
-    }
-  } catch {
+  if (passwordHash !== inputHash) {
     return false;
   }
 
   const cookieStore = await cookies();
-  cookieStore.set(ADMIN_COOKIE_NAME, buildSessionToken(password, secret), {
+  cookieStore.set(ADMIN_COOKIE_NAME, await buildSessionToken(password, secret), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",

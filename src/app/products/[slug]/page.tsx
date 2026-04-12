@@ -11,6 +11,7 @@ interface PageProps {
 }
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const resolvedParams = await params;
@@ -54,8 +55,8 @@ export default async function ProductPage({ params }: PageProps) {
   const formattedProduct = {
     ...product,
     specifications: {
-      parent: product.parentProductName,
-      variant: product.variantName ?? product.name,
+      product: product.parentProductName,
+      variants: `${product.variants.length} options`,
       inventory: `${product.inventory} trays`,
       category: product.category,
     },

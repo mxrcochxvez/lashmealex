@@ -1,18 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Heart, Star, ChevronLeft, ChevronRight, Share2, Check } from 'lucide-react';
 import { clsx } from 'clsx';
 import { LoadingButton } from './LoadingStates';
 import type { ProductCardProduct } from './ProductCard';
+import type { StoreVariant } from '@/lib/catalog';
 
 interface Product extends ProductCardProduct {
   images?: string[];
   features?: string[];
   specifications?: Record<string, string>;
   reviewCount?: number;
+  variants?: StoreVariant[];
 }
 
 interface QuickViewModalProps {
@@ -33,19 +35,42 @@ export default function QuickViewModal({
   isWishlisted = false
 }: QuickViewModalProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [selectedVariantId, setSelectedVariantId] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  useEffect(() => {
+    setSelectedVariantId(product?.variants?.[0]?.id ?? '');
+    setQuantity(1);
+  }, [product]);
+
   if (!product) return null;
 
+  const variants = product.variants ?? [];
+  const selectedVariant = variants.find((variant) => variant.id === selectedVariantId) ?? variants[0];
   const images = product.images || [];
   const hasMultipleImages = images.length > 1;
   const productUrl = `/products/${product.slug}`;
+  const activePrice = selectedVariant?.price ?? product.price;
+  const activeCompareAtPrice = selectedVariant?.compareAtPrice ?? product.compareAtPrice;
+  const activeInStock = selectedVariant?.inStock ?? product.inStock;
+  const cartProduct: Product = selectedVariant
+    ? {
+        ...product,
+        id: selectedVariant.id,
+        slug: selectedVariant.slug,
+        name: `${product.name} ${selectedVariant.variantName ?? ''}`.trim(),
+        price: selectedVariant.price,
+        compareAtPrice: selectedVariant.compareAtPrice,
+        image: selectedVariant.image ?? product.image,
+        inStock: selectedVariant.inStock,
+      }
+    : product;
 
   const handleAddToCart = async () => {
     setIsAddingToCart(true);
-    await onAddToCart(product, quantity);
+    await onAddToCart(cartProduct, quantity);
     setIsAddingToCart(false);
     onClose();
   };
@@ -214,15 +239,15 @@ export default function QuickViewModal({
                   {/* Price */}
                   <div className="flex items-center gap-4">
                     <span className="text-4xl font-bold tracking-tight text-foreground">
-                      ${product.price}
+                      ${activePrice}
                     </span>
-                    {product.compareAtPrice && product.compareAtPrice > product.price && (
+                    {activeCompareAtPrice && activeCompareAtPrice > activePrice && (
                       <>
                         <span className="text-2xl text-muted line-through opacity-50">
-                          ${product.compareAtPrice}
+                          ${activeCompareAtPrice}
                         </span>
                         <span className="bg-pink px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-white">
-                          Save ${product.compareAtPrice - product.price}
+                          Save ${activeCompareAtPrice - activePrice}
                         </span>
                       </>
                     )}
@@ -253,6 +278,30 @@ export default function QuickViewModal({
 
                   {/* Add to Cart Section */}
                   <div className="space-y-8 border-t border-line pt-10">
+                    {variants.length > 0 && (
+                      <div className="space-y-3">
+                        <label
+                          htmlFor="quickview-variant"
+                          className="block text-xs font-bold uppercase tracking-[0.2em] text-foreground"
+                        >
+                          Select Tray Size + Curl
+                        </label>
+                        <select
+                          id="quickview-variant"
+                          value={selectedVariant?.id ?? ''}
+                          onChange={(event) => setSelectedVariantId(event.target.value)}
+                          className="w-full border border-line bg-white px-4 py-4 text-sm text-foreground outline-none"
+                        >
+                          {variants.map((variant) => (
+                            <option key={variant.id} value={variant.id}>
+                              {(variant.variantName ?? variant.name)} · ${variant.price} ·{' '}
+                              {variant.inStock ? `${variant.inventory} in stock` : 'Out of stock'}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold uppercase tracking-[0.2em] text-foreground">Quantity</span>
                       <div className="flex items-center gap-4 border border-line p-1">
@@ -280,14 +329,14 @@ export default function QuickViewModal({
                     <div className="flex flex-col gap-4">
                       <LoadingButton
                         isLoading={isAddingToCart}
-                        disabled={!product.inStock}
+                        disabled={!activeInStock}
                         className={clsx(
                           'w-full py-5 text-sm font-bold uppercase tracking-[0.3em] transition-all',
-                          product.inStock ? 'btn-primary' : 'cursor-not-allowed bg-line text-muted'
+                          activeInStock ? 'btn-primary' : 'cursor-not-allowed bg-line text-muted'
                         )}
                         onClick={handleAddToCart}
                       >
-                        {product.inStock ? 'Add to Bag' : 'Out of Stock'}
+                        {activeInStock ? 'Add to Bag' : 'Out of Stock'}
                       </LoadingButton>
                       
                       <div className="flex items-center justify-center gap-3 text-[10px] font-bold uppercase tracking-widest text-muted">

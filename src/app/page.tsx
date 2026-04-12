@@ -7,6 +7,7 @@ import ProductGridWithQuickView from "../components/ProductGridWithQuickView";
 import { listStoreProducts } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
+export const runtime = "edge";
 
 const categories = [
   { name: "Lashes", href: "/shop?category=lashes" },

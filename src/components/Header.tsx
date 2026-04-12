@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Search, ShoppingBag, Menu, X, Heart, User, Calendar } from 'lucide-react';
@@ -38,7 +39,18 @@ export default function Header({
   isCartOpen = false,
   isMenuOpen = false,
 }: HeaderProps) {
+  const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
+
+  const isActiveRoute = (href: string) => {
+    const [basePath] = href.split('#');
+
+    if (!basePath || basePath === '/') {
+      return pathname === '/';
+    }
+
+    return pathname === basePath || pathname.startsWith(`${basePath}/`);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -82,9 +94,15 @@ export default function Header({
               <Link
                 key={item.label}
                 href={item.href}
-                className="text-[11px] font-bold uppercase tracking-[0.2em] text-foreground transition-colors hover:text-pink-dark"
+                className={clsx(
+                  'relative text-[11px] font-bold uppercase tracking-[0.2em] transition-colors hover:text-pink-dark',
+                  isActiveRoute(item.href) ? 'text-pink-dark' : 'text-foreground'
+                )}
               >
                 {item.label}
+                {isActiveRoute(item.href) && (
+                  <span className="absolute -bottom-2 left-0 h-px w-full bg-pink-dark" aria-hidden="true" />
+                )}
               </Link>
             ))}
             {externalLinks.map((item) => (
@@ -174,7 +192,12 @@ export default function Header({
                   <Link
                     key={item.label}
                     href={item.href}
-                    className="block text-sm font-bold uppercase tracking-[0.2em] text-foreground transition-colors hover:text-pink-dark"
+                    className={clsx(
+                      'block border-l-2 pl-4 text-sm font-bold uppercase tracking-[0.2em] transition-colors hover:text-pink-dark',
+                      isActiveRoute(item.href)
+                        ? 'border-pink-dark text-pink-dark'
+                        : 'border-transparent text-foreground'
+                    )}
                     onClick={() => onMenuToggle?.()}
                   >
                     {item.label}

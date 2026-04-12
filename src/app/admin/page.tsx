@@ -1,12 +1,13 @@
 import Link from 'next/link';
 
-import { logoutAction, updateOrderAction, updateProductAction } from './actions';
+import { logoutAction, updateOrderAction } from './actions';
 import { requireAdmin } from '@/lib/admin-auth';
-import { getAdminCatalogStats, listAdminProducts } from '@/lib/catalog';
+import { getAdminCatalogStats, listAdminProductGroups } from '@/lib/catalog';
 import { formatUsdFromCents } from '@/lib/money';
 import { getAdminOrderStats, listAdminOrders } from '@/lib/orders';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
 
 function formatDate(value: Date | null) {
   if (!value) {
@@ -23,8 +24,8 @@ function formatDate(value: Date | null) {
 export default async function AdminPage() {
   await requireAdmin();
 
-  const [products, catalogStats, orders, orderStats] = await Promise.all([
-    listAdminProducts(),
+  const [productGroups, catalogStats, orders, orderStats] = await Promise.all([
+    listAdminProductGroups(),
     getAdminCatalogStats(),
     listAdminOrders(),
     getAdminOrderStats(),
@@ -59,7 +60,7 @@ export default async function AdminPage() {
           </div>
         </div>
 
-        <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-5">
           <div className="border border-foreground bg-white p-6">
             <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">Active Variants</p>
             <p className="mt-5 font-display text-4xl text-foreground">{catalogStats.activeVariants}</p>
@@ -67,6 +68,12 @@ export default async function AdminPage() {
           <div className="border border-foreground bg-white p-6">
             <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">Inventory On Hand</p>
             <p className="mt-5 font-display text-4xl text-foreground">{catalogStats.totalInventory}</p>
+          </div>
+          <div className="border border-foreground bg-white p-6">
+            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">Inventory Value</p>
+            <p className="mt-5 font-display text-4xl text-foreground">
+              {formatUsdFromCents(catalogStats.inventoryValue)}
+            </p>
           </div>
           <div className="border border-foreground bg-white p-6">
             <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">Paid Sales</p>
@@ -84,74 +91,41 @@ export default async function AdminPage() {
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-pink-dark">Catalog</p>
             <h2 className="mt-4 font-display text-4xl tracking-tighter text-foreground">
-              Variant Inventory
+              Products
             </h2>
           </div>
 
           <div className="space-y-4">
-            {products.map((product) => (
-              <form
+            {productGroups.map((product) => (
+              <div
                 key={product.id}
-                action={updateProductAction}
-                className="grid gap-5 border border-foreground bg-white p-6 lg:grid-cols-[2fr_1fr_1fr_auto]"
+                className="grid gap-5 border border-foreground bg-white p-6 lg:grid-cols-[2fr_1fr_auto]"
               >
-                <input type="hidden" name="productId" value={product.id} />
-                <input type="hidden" name="slug" value={product.slug} />
-
                 <div>
                   <p className="font-display text-2xl text-foreground">{product.name}</p>
                   <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
-                    {product.variantName ?? product.parentProductName}
+                    {product.variantCount} variants
                   </p>
-                  <p className="mt-2 text-xs text-muted">{product.slug}</p>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-                  <label className="space-y-2">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
-                      Price
-                    </span>
-                    <input
-                      type="number"
-                      name="price"
-                      step="0.01"
-                      min="0"
-                      defaultValue={(product.price / 100).toFixed(2)}
-                      className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none"
-                    />
-                  </label>
-                  <label className="space-y-2">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
-                      Inventory
-                    </span>
-                    <input
-                      type="number"
-                      name="inventory"
-                      min="0"
-                      defaultValue={product.inventory}
-                      className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none"
-                    />
-                  </label>
+                  <p className="mt-3 max-w-2xl text-sm text-muted">{product.description}</p>
                 </div>
 
                 <div className="space-y-4">
-                  <label className="flex items-center gap-3 text-sm text-foreground">
-                    <input type="checkbox" name="isActive" defaultChecked={product.isActive} />
-                    Active on storefront
-                  </label>
-                  <label className="flex items-center gap-3 text-sm text-foreground">
-                    <input type="checkbox" name="isFeatured" defaultChecked={product.isFeatured} />
-                    Featured on homepage
-                  </label>
-                  <p className="text-xs text-muted">Updated {formatDate(product.updatedAt)}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">Category</p>
+                  <p className="text-sm text-foreground">{product.category}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">Inventory</p>
+                  <p className="text-sm text-foreground">{product.totalInventory} trays</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">Visibility</p>
+                  <p className="text-sm text-foreground">
+                    {product.hasActiveVariant ? 'Active' : 'Hidden'} · {product.isFeatured ? 'Featured' : 'Standard'}
+                  </p>
                 </div>
 
                 <div className="flex items-end">
-                  <button type="submit" className="btn-secondary w-full">
-                    Save
-                  </button>
+                  <Link href={`/admin/products/${product.slug}`} className="btn-secondary w-full text-center">
+                    Edit Product
+                  </Link>
                 </div>
-              </form>
+              </div>
             ))}
           </div>
         </section>

@@ -8,14 +8,13 @@ import { clsx } from 'clsx';
 import Header from '../../../components/Header';
 import { LoadingButton, FadeIn } from '../../../components/LoadingStates';
 import ProductGridWithQuickView from '../../../components/ProductGridWithQuickView';
-import type { StoreProduct } from '@/lib/catalog';
+import type { StoreProduct, StoreVariant } from '@/lib/catalog';
 
 interface Product {
   id: string;
   slug: string;
   parentProductName: string;
   name: string;
-  variantName?: string;
   price: number;
   compareAtPrice?: number;
   description: string;
@@ -26,6 +25,7 @@ interface Product {
   inStock: boolean;
   features?: string[];
   specifications?: Record<string, string>;
+  variants: StoreVariant[];
 }
 
 interface ProductDetailClientProps {
@@ -35,10 +35,13 @@ interface ProductDetailClientProps {
 
 export default function ProductDetailClient({ product, relatedProducts }: ProductDetailClientProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [selectedVariantId, setSelectedVariantId] = useState(product.variants[0]?.id ?? '');
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
 
+  const selectedVariant =
+    product.variants.find((variant) => variant.id === selectedVariantId) ?? product.variants[0];
   const images = product.images || [];
   const hasMultipleImages = images.length > 1;
 
@@ -172,9 +175,11 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
                   <h1 className="mt-2 font-display text-3xl font-semibold text-foreground lg:text-5xl">
                     {product.name}
                   </h1>
-                  <p className="mt-3 text-sm uppercase tracking-[0.24em] text-muted">
-                    {product.parentProductName}
-                  </p>
+                  {selectedVariant?.variantName && (
+                    <p className="mt-3 text-sm uppercase tracking-[0.24em] text-muted">
+                      Selected variant: {selectedVariant.variantName}
+                    </p>
+                  )}
                 </div>
 
                 {/* Rating */}
@@ -202,15 +207,16 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
                 {/* Price */}
                 <div className="flex items-center gap-4">
                   <span className="text-4xl font-semibold text-foreground">
-                    ${product.price}
+                    ${selectedVariant?.price ?? product.price}
                   </span>
-                  {product.compareAtPrice && product.compareAtPrice > product.price && (
+                  {selectedVariant?.compareAtPrice &&
+                    selectedVariant.compareAtPrice > selectedVariant.price && (
                     <>
                       <span className="text-2xl text-muted line-through">
-                        ${product.compareAtPrice}
+                        ${selectedVariant.compareAtPrice}
                       </span>
                       <span className="rounded-full bg-[#7f304d] px-3 py-1 text-sm font-semibold text-white">
-                        Save ${product.compareAtPrice - product.price}
+                        Save ${selectedVariant.compareAtPrice - selectedVariant.price}
                       </span>
                     </>
                   )}
@@ -241,6 +247,31 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
 
               {/* Add to Cart Section */}
               <div className="space-y-6 rounded-[28px] border border-line bg-white/80 p-6 shadow-md">
+                {product.variants.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-semibold text-foreground">Choose Variant</h3>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {product.variants.map((variant) => (
+                        <button
+                          key={variant.id}
+                          onClick={() => setSelectedVariantId(variant.id)}
+                          className={clsx(
+                            'border px-4 py-3 text-left transition-colors',
+                            selectedVariant?.id === variant.id
+                              ? 'border-foreground bg-foreground text-background'
+                              : 'border-line bg-white text-foreground hover:border-foreground'
+                          )}
+                        >
+                          <p className="text-sm font-semibold">{variant.variantName ?? variant.name}</p>
+                          <p className={clsx('mt-1 text-xs', selectedVariant?.id === variant.id ? 'text-background/70' : 'text-muted')}>
+                            ${variant.price} · {variant.inStock ? `${variant.inventory} in stock` : 'Out of stock'}
+                          </p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <span className="text-sm font-semibold text-foreground">Quantity:</span>
@@ -283,14 +314,16 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
 
                 <LoadingButton
                   isLoading={isAddingToCart}
-                  disabled={!product.inStock}
+                  disabled={!selectedVariant?.inStock}
                   className={clsx(
                     'w-full py-4 text-lg font-semibold',
-                    product.inStock ? 'btn-primary' : 'cursor-not-allowed rounded-full bg-[#e6dfdb] text-muted'
+                    selectedVariant?.inStock
+                      ? 'btn-primary'
+                      : 'cursor-not-allowed rounded-full bg-[#e6dfdb] text-muted'
                   )}
                   onClick={handleAddToCart}
                 >
-                  {product.inStock ? 'Add to Cart' : 'Out of Stock'}
+                  {selectedVariant?.inStock ? 'Add to Cart' : 'Out of Stock'}
                 </LoadingButton>
 
                 <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted">
@@ -317,7 +350,11 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
                     {Object.entries(product.specifications).map(([key, value]) => (
                       <div key={key} className="flex justify-between border-b border-line py-2 last:border-b-0">
                         <span className="text-muted capitalize">{key}</span>
-                        <span className="font-medium text-foreground">{value}</span>
+                        <span className="font-medium text-foreground">
+                          {key === 'inventory' && selectedVariant
+                            ? `${selectedVariant.inventory} trays`
+                            : value}
+                        </span>
                       </div>
                     ))}
                   </div>

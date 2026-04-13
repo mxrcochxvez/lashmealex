@@ -101,7 +101,7 @@ export default function QuickViewModal({
 
           {/* Modal */}
           <motion.div
-            className="fixed inset-4 lg:inset-8 z-modal flex items-center justify-center p-4 lg:p-0"
+            className="fixed inset-0 lg:inset-8 z-modal flex items-start lg:items-center justify-center p-4 lg:p-0 overflow-y-auto lg:overflow-visible"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
@@ -109,7 +109,7 @@ export default function QuickViewModal({
             onClick={onClose}
           >
             <div 
-              className="relative glass-heavy flex w-full max-w-4xl flex-col overflow-hidden rounded-[40px] lg:flex-row lg:h-[560px]"
+              className="relative glass-heavy flex w-full max-w-4xl flex-col overflow-visible lg:overflow-hidden rounded-[40px] lg:flex-row lg:h-[560px] my-4 lg:my-0"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Close Button — removed from absolute position, placed inline in header below */}
@@ -178,7 +178,7 @@ export default function QuickViewModal({
               </div>
 
               {/* Product Details */}
-              <div className="flex-1 flex flex-col p-5 lg:p-7 overflow-hidden bg-white/40 backdrop-blur-md">
+              <div className="flex-1 flex flex-col p-5 lg:p-7 overflow-y-auto lg:overflow-hidden bg-white/40 backdrop-blur-md">
                 <div className="flex flex-col gap-4 h-full">
                   {/* Header */}
                   <div>

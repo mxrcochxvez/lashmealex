@@ -4,7 +4,7 @@ import Link from "next/link";
 import Header from "../components/Header";
 import {FadeIn} from "../components/LoadingStates";
 import ProductGridWithQuickView from "../components/ProductGridWithQuickView";
-import {listStoreProducts} from "@/lib/catalog";
+import {getHeroProduct, listStoreProducts} from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +20,7 @@ export const metadata: Metadata = {
 
 export default async function Home() {
   const storeProducts = await listStoreProducts();
+  const heroProduct = await getHeroProduct();
   const featuredProducts = storeProducts.filter((product) => product.isFeatured).slice(0, 8);
   const newArrivals = [...storeProducts].sort((a, b) => a.sortOrder - b.sortOrder).slice(0, 8);
 
@@ -69,18 +70,27 @@ export default async function Home() {
                       Featured
                     </p>
                     <h2 className="mt-8 font-display text-4xl font-medium leading-tight tracking-tight text-foreground">
-                      Lash Extensions. <br />Every Size & Curl Available.
+                      {heroProduct?.name ?? "Lash Extensions."}
                     </h2>
                     <p className="mt-8 text-sm leading-relaxed text-muted">
-                      Browse our full range of curls, diameters, and lengths — each one stocked
-                      individually so you always know exactly what&apos;s available.
+                      {heroProduct?.description || "Browse our full range of curls, diameters, and lengths — each one stocked individually so you always know exactly what's available."}
                     </p>
-                    <Link href="/shop" className="btn-ghost mt-10 w-fit">
+                    <Link
+                      href={heroProduct ? `/products/${heroProduct.slug}` : "/shop"}
+                      className="btn-ghost mt-10 w-fit"
+                    >
                       View Details
                     </Link>
                   </div>
                   <div className="relative h-80 overflow-hidden">
-                    <div className="absolute inset-0 bg-[url('https://medusa-public-images.s3.eu-west-1.amazonaws.com/sweatshirt-vintage-front.png')] bg-cover bg-center" />
+                    {heroProduct?.image ? (
+                      <div
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{ backgroundImage: `url('${heroProduct.image}')` }}
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-[url('https://medusa-public-images.s3.eu-west-1.amazonaws.com/sweatshirt-vintage-front.png')] bg-cover bg-center" />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#d9b09f]/20 to-transparent mix-blend-multiply" />
                   </div>
                 </div>

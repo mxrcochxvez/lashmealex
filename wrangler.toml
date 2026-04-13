@@ -1,5 +1,5 @@
 "$schema" = "node_modules/wrangler/config-schema.json"
-name = "lashmealex-storefront"
+name = "lashmealex"
 account_id = "f59a296b69d6b48f536b4ad6ca37d959"
 main = ".open-next/worker.js"
 compatibility_date = "2026-04-12"

@@ -483,6 +483,38 @@ export async function updateVariantAction(formData: FormData) {
 }
 
 /**
+ * Sets a product as the hero product displayed on the homepage.
+ * Clears isHero from all other products first to ensure only one hero exists.
+ *
+ * @param formData Must contain `parentProductId` and `parentSlug`.
+ * @throws Redirects back to the product editor.
+ */
+export async function setHeroProductAction(formData: FormData) {
+  await requireAdmin();
+
+  const parentProductId = String(formData.get('parentProductId') ?? '').trim();
+  const parentSlug = String(formData.get('parentSlug') ?? '').trim();
+
+  if (!parentProductId || !parentSlug) {
+    return;
+  }
+
+  const db = getDb();
+
+  // Clear hero flag from all products
+  await db.update(products).set({ isHero: false, updatedAt: new Date() });
+
+  // Set hero flag on all variants of this parent product
+  await db
+    .update(products)
+    .set({ isHero: true, updatedAt: new Date() })
+    .where(eq(products.parentProductId, parentProductId));
+
+  revalidateCatalogPaths(parentSlug);
+  redirect(`/admin/products/${parentSlug}`);
+}
+
+/**
  * Deletes a parent product and all of its variants.
  *
  * @param formData Submitted product-delete form data.

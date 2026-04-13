@@ -6,6 +6,7 @@ import {
   deleteProductAction,
   deleteVariantAction,
   logoutAction,
+  setHeroProductAction,
   updateProductAction,
   updateVariantAction,
   uploadProductImageAction,
@@ -191,6 +192,22 @@ export default async function AdminProductPage({ params }: AdminProductPageProps
                 </label>
                 <button type="submit" className="btn-secondary w-full">
                   Upload Product Image
+                </button>
+              </form>
+
+              <form action={setHeroProductAction}>
+                <input type="hidden" name="parentProductId" value={product.id} />
+                <input type="hidden" name="parentSlug" value={product.slug} />
+                <button
+                  type="submit"
+                  className={`w-full border px-4 py-3 text-sm font-semibold uppercase tracking-[0.2em] transition-colors ${
+                    product.isHero
+                      ? 'border-pink-dark bg-pink-dark text-white cursor-default'
+                      : 'border-foreground text-foreground hover:bg-foreground hover:text-background'
+                  }`}
+                  disabled={product.isHero}
+                >
+                  {product.isHero ? '★ Hero Product' : 'Set as Hero Product'}
                 </button>
               </form>
 

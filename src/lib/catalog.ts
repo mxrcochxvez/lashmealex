@@ -52,6 +52,7 @@ export interface AdminProductGroup {
   variantCount: number;
   totalInventory: number;
   isFeatured: boolean;
+  isHero: boolean;
   hasActiveVariant: boolean;
   variants: Array<typeof products.$inferSelect>;
 }
@@ -160,6 +161,7 @@ function groupAdminProducts(rows: Array<typeof products.$inferSelect>): AdminPro
       variantCount: sortedRows.length,
       totalInventory: sortedRows.reduce((sum, row) => sum + row.inventory, 0),
       isFeatured: sortedRows.some((row) => row.isFeatured),
+      isHero: sortedRows.some((row) => row.isHero),
       hasActiveVariant: sortedRows.some((row) => row.isActive),
       variants: sortedRows,
     };

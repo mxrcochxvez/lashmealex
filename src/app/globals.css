@@ -221,3 +221,14 @@ textarea {
   0%, 100% { transform: translateX(0); }
   50% { transform: translateX(4px); }
 }
+
+/* Eyelash blink animation */
+@keyframes eyelashBlink {
+  0%, 90%, 100% { transform: scaleY(1); }
+  95%            { transform: scaleY(0.08); }
+}
+
+.eyelash-blink {
+  transform-origin: center 10px;
+  animation: eyelashBlink 4s ease-in-out infinite;
+}

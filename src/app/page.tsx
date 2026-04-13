@@ -42,7 +42,7 @@ export default async function Home() {
                   </h1>
 
                   <div className="mt-14 flex flex-col gap-6 sm:flex-row">
-                    <Link href="/shop" className="btn-primary min-w-[200px]">
+                    <Link href="/shop" className="btn-primary min-w-[200px] !bg-pink-dark !border-pink-dark hover:!bg-foreground hover:!border-foreground">
                       Shop Now
                     </Link>
                     <Link href="/#bestsellers" className="btn-secondary min-w-[200px]">

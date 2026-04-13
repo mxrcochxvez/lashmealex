@@ -81,6 +81,21 @@ export default function Header({
               <div className="hidden sm:block">
                 <p className="font-display text-3xl leading-none text-foreground tracking-tighter">lashmealex</p>
               </div>
+              {/* Blinking eyelash */}
+              <div className="hidden sm:flex items-center" aria-hidden="true">
+                <svg width="28" height="18" viewBox="0 0 28 18" fill="none" xmlns="http://www.w3.org/2000/svg" className="eyelash-blink">
+                  {/* Lid */}
+                  <path d="M2 10 Q14 2 26 10" stroke="#121212" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+                  {/* Lashes */}
+                  <line x1="5"  y1="8.2"  x2="3.5"  y2="3"   stroke="#121212" strokeWidth="1.2" strokeLinecap="round"/>
+                  <line x1="9"  y1="5.8"  x2="8.5"  y2="0.5" stroke="#121212" strokeWidth="1.2" strokeLinecap="round"/>
+                  <line x1="14" y1="4.5"  x2="14"   y2="0"   stroke="#121212" strokeWidth="1.2" strokeLinecap="round"/>
+                  <line x1="19" y1="5.8"  x2="19.5" y2="0.5" stroke="#121212" strokeWidth="1.2" strokeLinecap="round"/>
+                  <line x1="23" y1="8.2"  x2="24.5" y2="3"   stroke="#121212" strokeWidth="1.2" strokeLinecap="round"/>
+                  {/* Lower lid */}
+                  <path d="M2 10 Q14 17 26 10" stroke="#121212" strokeWidth="1" strokeLinecap="round" fill="none" opacity="0.3"/>
+                </svg>
+              </div>
             </Link>
           </div>
 

@@ -34,6 +34,7 @@ export interface StoreProduct {
   image?: string;
   images: string[];
   isFeatured: boolean;
+  isHero: boolean;
   sortOrder: number;
   rating: number;
   reviewCount: number;
@@ -117,6 +118,7 @@ function groupProducts(rows: Array<typeof products.$inferSelect>): StoreProduct[
       image: activeImages[0],
       images: activeImages.length > 0 ? Array.from(new Set(activeImages)) : [],
       isFeatured: sortedRows.some((row) => row.isFeatured),
+      isHero: sortedRows.some((row) => row.isHero),
       sortOrder: primaryRow.sortOrder,
       rating: 5,
       reviewCount: 0,
@@ -216,6 +218,11 @@ export async function getStoreProductBySlug(slug: string): Promise<StoreProduct 
   const rows = await listStoreProducts();
 
   return rows.find((product) => product.slug === slug) ?? null;
+}
+
+export async function getHeroProduct(): Promise<StoreProduct | null> {
+  const rows = await listStoreProducts();
+  return rows.find((product) => product.isHero) ?? rows.find((product) => product.isFeatured) ?? rows[0] ?? null;
 }
 
 /**

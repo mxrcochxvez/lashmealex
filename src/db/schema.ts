@@ -14,6 +14,7 @@ export const products = sqliteTable("products", {
   inventory: integer("inventory").notNull().default(0),
   imageUrl: text("image_url"),
   isFeatured: integer("is_featured", { mode: "boolean" }).notNull().default(true),
+  isHero: integer("is_hero", { mode: "boolean" }).notNull().default(false),
   sortOrder: integer("sort_order").notNull().default(0),
   isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),

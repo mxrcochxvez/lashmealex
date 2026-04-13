@@ -15,6 +15,13 @@
       "when": 1776031160783,
       "tag": "0001_variant_catalog_admin",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1776042952191,
+      "tag": "0002_careful_storm",
+      "breakpoints": true
     }
   ]
 }

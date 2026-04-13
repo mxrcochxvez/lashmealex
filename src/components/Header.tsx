@@ -64,7 +64,7 @@ export default function Header({
           isScrolled ? 'border-b border-foreground bg-background' : 'bg-transparent'
         )}
       >
-        <div className="mx-auto flex h-16 w-full items-center justify-between px-6 sm:px-12 lg:h-24 lg:px-20">
+        <div className="relative mx-auto flex h-16 w-full items-center justify-between px-6 sm:px-12 lg:h-24 lg:px-20">
           <div className="flex items-center gap-3">
             <button
               onClick={onMenuToggle}
@@ -84,13 +84,13 @@ export default function Header({
             </Link>
           </div>
 
-          <nav className="hidden items-center gap-10 lg:flex">
+          <nav className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center lg:flex">
             {navigationItems.map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
                 className={clsx(
-                  'relative text-[11px] font-bold uppercase tracking-[0.2em] transition-colors hover:text-pink-dark',
+                  'relative text-sm font-bold uppercase tracking-[0.25em] transition-colors hover:text-pink-dark',
                   isActiveRoute(item.href) ? 'text-pink-dark' : 'text-foreground'
                 )}
               >
@@ -100,10 +100,7 @@ export default function Header({
                 )}
               </Link>
             ))}
-
           </nav>
-
-          <div className="hidden lg:block h-6 w-px bg-line mx-2" aria-hidden="true" />
 
           <div className="flex items-center gap-1 sm:gap-2">
             <button

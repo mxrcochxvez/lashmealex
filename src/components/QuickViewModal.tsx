@@ -122,7 +122,7 @@ export default function QuickViewModal({
               </button>
 
               {/* Product Images */}
-              <div className="relative bg-gradient-to-br from-[#f7e6df] via-[#fff7f3] to-[#ecd3ca] lg:w-[55%]">
+              <div className="relative bg-gradient-to-br from-[#f7e6df] via-[#fff7f3] to-[#ecd3ca] lg:w-[50%]">
                 {images.length > 0 ? (
                   <>
                     <div className="aspect-square lg:aspect-auto lg:h-full flex items-center justify-center p-12 lg:p-16">
@@ -185,16 +185,16 @@ export default function QuickViewModal({
               </div>
 
               {/* Product Details */}
-              <div className="flex-1 p-10 lg:p-16 overflow-y-auto bg-white/40 backdrop-blur-md">
-                <div className="space-y-10">
+              <div className="flex-1 p-6 lg:p-10 overflow-y-auto bg-white/40 backdrop-blur-md">
+                <div className="space-y-6 lg:space-y-8">
                   {/* Header */}
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     <div className="flex items-start justify-between gap-6">
                       <div className="flex-1">
                         <p className="text-xs font-bold uppercase tracking-[0.3em] text-pink-dark">
                           {product.category}
                         </p>
-                        <h2 className="mt-4 font-display text-3xl font-medium tracking-tight text-foreground lg:text-5xl">
+                        <h2 className="mt-3 font-display text-3xl font-medium tracking-tight text-foreground lg:text-4xl">
                           {product.name}
                         </h2>
                       </div>
@@ -277,7 +277,7 @@ export default function QuickViewModal({
                   )}
 
                   {/* Add to Cart Section */}
-                  <div className="space-y-8 border-t border-line pt-10">
+                  <div className="space-y-6 border-t border-line pt-6">
                     {variants.length > 0 && (
                       <div className="space-y-3">
                         <label

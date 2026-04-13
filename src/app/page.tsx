@@ -1,15 +1,15 @@
-import type { Metadata } from "next";
+import type {Metadata} from "next";
 import Link from "next/link";
 
 import Header from "../components/Header";
-import { FadeIn } from "../components/LoadingStates";
+import {FadeIn} from "../components/LoadingStates";
 import ProductGridWithQuickView from "../components/ProductGridWithQuickView";
-import { listStoreProducts } from "@/lib/catalog";
+import {listStoreProducts} from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
 
 const categories = [
-  { name: "Lashes", href: "/shop?category=lashes" },
+  {name: "Lashes", href: "/shop?category=lashes"},
 ];
 
 export const metadata: Metadata = {
@@ -39,10 +39,6 @@ export default async function Home() {
                   <h1 className="mt-10 font-display text-[3.5rem] font-medium leading-[1] tracking-tighter text-foreground sm:text-[5.5rem]">
                     Your Lash <br />Essentials.
                   </h1>
-                  <p className="mt-10 max-w-xl text-lg leading-relaxed text-muted">
-                    Professional-grade lash extensions, adhesives, and aftercare — hand-picked
-                    and curated by a Fresno lash artist for flawless results every time.
-                  </p>
 
                   <div className="mt-14 flex flex-col gap-6 sm:flex-row">
                     <Link href="/shop" className="btn-primary min-w-[200px]">

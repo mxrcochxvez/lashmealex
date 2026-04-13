@@ -109,23 +109,16 @@ export default function QuickViewModal({
             onClick={onClose}
           >
             <div 
-              className="relative glass-heavy flex max-h-full w-full max-w-7xl flex-col overflow-hidden rounded-[40px] lg:flex-row"
+              className="relative glass-heavy flex w-full max-w-4xl flex-col overflow-hidden rounded-[40px] lg:flex-row lg:h-[560px]"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Close Button */}
-              <button
-                onClick={onClose}
-                className="focus-ring absolute right-6 top-6 z-10 rounded-full bg-white/84 p-2.5 text-foreground transition-colors hover:text-pink-dark shadow-lg"
-                aria-label="Close quick view"
-              >
-                <X size={24} />
-              </button>
+              {/* Close Button — removed from absolute position, placed inline in header below */}
 
               {/* Product Images */}
-              <div className="relative bg-gradient-to-br from-[#f7e6df] via-[#fff7f3] to-[#ecd3ca] lg:w-[50%]">
+              <div className="relative bg-gradient-to-br from-[#f7e6df] via-[#fff7f3] to-[#ecd3ca] lg:w-[45%] lg:h-full">
                 {images.length > 0 ? (
                   <>
-                    <div className="aspect-square lg:aspect-auto lg:h-full flex items-center justify-center p-12 lg:p-16">
+                    <div className="aspect-square lg:aspect-auto lg:h-full flex items-center justify-center p-8">
                       <motion.img
                         key={currentImageIndex}
                         src={images[currentImageIndex]}
@@ -189,8 +182,8 @@ export default function QuickViewModal({
                 <div className="space-y-6 lg:space-y-8">
                   {/* Header */}
                   <div className="space-y-3">
-                    <div className="flex items-start justify-between gap-6">
-                      <div className="flex-1">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold uppercase tracking-[0.3em] text-pink-dark">
                           {product.category}
                         </p>
@@ -198,19 +191,25 @@ export default function QuickViewModal({
                           {product.name}
                         </h2>
                       </div>
-                      <button
-                        onClick={() => onToggleWishlist(product.id)}
-                        className="focus-ring rounded-full border border-line bg-white p-4 text-foreground transition-all hover:scale-110 hover:text-pink-dark shadow-sm"
-                        aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-                      >
-                        <Heart
-                          size={24}
-                          className={clsx(
-                            'transition-colors',
-                            isWishlisted && 'fill-pink-dark text-pink-dark'
-                          )}
-                        />
-                      </button>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={() => onToggleWishlist(product.id)}
+                          className="focus-ring rounded-full border border-line bg-white p-3 text-foreground transition-all hover:scale-110 hover:text-pink-dark shadow-sm"
+                          aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                        >
+                          <Heart
+                            size={18}
+                            className={clsx('transition-colors', isWishlisted && 'fill-pink-dark text-pink-dark')}
+                          />
+                        </button>
+                        <button
+                          onClick={onClose}
+                          className="focus-ring rounded-full border border-line bg-white p-3 text-foreground transition-all hover:bg-foreground hover:text-background shadow-sm"
+                          aria-label="Close quick view"
+                        >
+                          <X size={18} />
+                        </button>
+                      </div>
                     </div>
 
                     {/* Rating */}

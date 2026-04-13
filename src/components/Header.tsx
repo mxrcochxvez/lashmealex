@@ -20,14 +20,9 @@ interface HeaderProps {
 
 const navigationItems = [
   { label: 'Shop', href: '/shop' },
-  { label: 'Best Sellers', href: '/#bestsellers' },
-  { label: 'New Arrivals', href: '/#new-arrivals' },
 ];
 
-const externalLinks = [
-  { label: 'Services', href: 'https://lashmealex.glossgenius.com/services' },
-  { label: 'Book Appointment', href: 'https://lashmealex.glossgenius.com/' },
-];
+
 
 export default function Header({
   cartItemCount = 0,
@@ -105,17 +100,7 @@ export default function Header({
                 )}
               </Link>
             ))}
-            {externalLinks.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                target="_blank"
-                rel="noreferrer"
-                className="text-[11px] font-bold uppercase tracking-[0.2em] text-foreground transition-colors hover:text-pink-dark"
-              >
-                {item.label}
-              </a>
-            ))}
+
           </nav>
 
           <div className="hidden lg:block h-6 w-px bg-line mx-2" aria-hidden="true" />
@@ -203,18 +188,7 @@ export default function Header({
                     {item.label}
                   </Link>
                 ))}
-                {externalLinks.map((item) => (
-                  <a
-                    key={item.label}
-                    href={item.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="block text-sm font-bold uppercase tracking-[0.2em] text-foreground transition-colors hover:text-pink-dark"
-                    onClick={() => onMenuToggle?.()}
-                  >
-                    {item.label}
-                  </a>
-                ))}
+
                 <div className="border-t border-line pt-6">
                   <Link href="/shop" className="btn-primary w-full" onClick={() => onMenuToggle?.()}>
                     Shop products

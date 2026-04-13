@@ -148,12 +148,13 @@ export default async function AdminPage() {
 
               <label className="space-y-2">
                 <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
-                  Product Image URL
+                  Product Image
                 </span>
                 <input
-                  type="url"
-                  name="imageUrl"
-                  className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none"
+                  type="file"
+                  name="image"
+                  accept="image/*"
+                  className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none file:mr-3 file:border-0 file:bg-foreground file:px-3 file:py-2 file:text-xs file:font-bold file:uppercase file:tracking-[0.2em] file:text-background"
                 />
               </label>
 

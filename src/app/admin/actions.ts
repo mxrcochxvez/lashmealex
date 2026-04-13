@@ -205,9 +205,10 @@ export async function createProductAction(formData: FormData) {
     `${parentSlug}-${slugify(initialVariantName)}`,
   );
   const db = getDb();
+  const newProductId = crypto.randomUUID();
 
   await db.insert(products).values({
-    id: crypto.randomUUID(),
+    id: newProductId,
     parentProductId: parentIdFromSlug(parentSlug),
     parentProductName: productName,
     slug: variantSlug,
@@ -225,6 +226,19 @@ export async function createProductAction(formData: FormData) {
     createdAt: new Date(),
     updatedAt: new Date(),
   });
+
+  const upload = formData.get('image') as File | null;
+  const isValidFile = upload && typeof upload === 'object' && 'size' in upload && 'name' in upload;
+
+  if (isValidFile && upload.size > 0 && upload.type.startsWith('image/')) {
+    const objectKey = `products/${parentSlug}/${Date.now()}-${sanitizeFileName(upload.name)}`;
+    const finalImageUrl = await uploadImageFile(upload, objectKey);
+
+    await db
+      .update(products)
+      .set({ imageUrl: finalImageUrl })
+      .where(eq(products.id, newProductId));
+  }
 
   revalidatePath('/');
   revalidatePath('/shop');
@@ -300,9 +314,10 @@ export async function uploadProductImageAction(formData: FormData) {
 
   const parentProductId = String(formData.get('parentProductId') ?? '').trim();
   const parentSlug = String(formData.get('parentSlug') ?? '').trim();
-  const upload = formData.get('image');
+  const upload = formData.get('image') as File | null;
+  const isValidFile = upload && typeof upload === 'object' && 'size' in upload && 'name' in upload;
 
-  if (!parentProductId || !parentSlug || !(upload instanceof File) || upload.size === 0) {
+  if (!parentProductId || !parentSlug || !isValidFile || upload.size === 0) {
     redirect(`/admin/products/${parentSlug || ''}`);
   }
 
@@ -338,9 +353,10 @@ export async function uploadVariantImageAction(formData: FormData) {
   const productId = String(formData.get('productId') ?? '').trim();
   const parentSlug = String(formData.get('parentSlug') ?? '').trim();
   const variantSlug = String(formData.get('slug') ?? '').trim();
-  const upload = formData.get('image');
+  const upload = formData.get('image') as File | null;
+  const isValidFile = upload && typeof upload === 'object' && 'size' in upload && 'name' in upload;
 
-  if (!productId || !parentSlug || !variantSlug || !(upload instanceof File) || upload.size === 0) {
+  if (!productId || !parentSlug || !variantSlug || !isValidFile || upload.size === 0) {
     redirect(`/admin/products/${parentSlug || ''}`);
   }
 

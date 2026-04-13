@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { Heart, X } from 'lucide-react';
-import Header from '../../components/Header';
+import HeaderShell from '../../components/HeaderShell';
 import ProductCard from '../../components/ProductCard';
 import { LoadingButton, FadeIn } from '../../components/LoadingStates';
 import type { ProductCardProduct } from '../../components/ProductCard';
@@ -95,13 +95,9 @@ export default function WishlistPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header
+      <HeaderShell
         cartItemCount={cartItemCount}
         wishlistItemCount={wishlistItems.length}
-        onCartToggle={() => setIsCartOpen(true)}
-        onMenuToggle={() => setIsMenuOpen(!isMenuOpen)}
-        isCartOpen={isCartOpen}
-        isMenuOpen={isMenuOpen}
       />
 
       <main className="w-full px-6 py-16 sm:px-12 lg:px-20 lg:py-24">

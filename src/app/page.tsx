@@ -1,7 +1,7 @@
 import type {Metadata} from "next";
 import Link from "next/link";
 
-import Header from "../components/Header";
+import HeaderShell from "../components/HeaderShell";
 import {FadeIn} from "../components/LoadingStates";
 import ProductGridWithQuickView from "../components/ProductGridWithQuickView";
 import {getHeroProduct, listStoreProducts} from "@/lib/catalog";
@@ -26,7 +26,7 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <HeaderShell products={storeProducts} />
 
       <main>
         <section className="px-6 py-16 sm:px-12 lg:px-20 lg:py-24">

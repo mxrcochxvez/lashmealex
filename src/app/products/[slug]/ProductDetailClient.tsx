@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, Star, ChevronLeft, ChevronRight, Minus, Plus, Truck, Shield, RefreshCw } from 'lucide-react';
 import { clsx } from 'clsx';
-import Header from '../../../components/Header';
+import HeaderShell from '../../../components/HeaderShell';
 import { LoadingButton, FadeIn } from '../../../components/LoadingStates';
 import ProductGridWithQuickView from '../../../components/ProductGridWithQuickView';
 import type { StoreProduct, StoreVariant } from '@/lib/catalog';
@@ -71,7 +71,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <HeaderShell />
       
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Breadcrumb */}

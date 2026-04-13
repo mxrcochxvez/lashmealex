@@ -182,10 +182,10 @@ export default function SearchModal({
                           <motion.button
                             key={result.id}
                             onClick={() => handleResultClick(result)}
-                            className="w-full rounded-xl p-3 text-left transition-colors hover:bg-surface-hover"
+                            className="flex w-full items-center gap-4 rounded-xl p-3 text-left transition-colors hover:bg-surface-hover"
                             whileHover={{ x: 4 }}
                           >
-                            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-[#f3dfd8] to-[#fff7f3]">
+                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#f3dfd8] to-[#fff7f3]">
                               <span className="text-xs font-semibold text-foreground">
                                 {result.name.slice(0, 2).toUpperCase()}
                               </span>

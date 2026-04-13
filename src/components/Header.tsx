@@ -12,13 +12,12 @@ interface HeaderProps {
   wishlistItemCount?: number;
   onSearchToggle?: () => void;
   onCartToggle?: () => void;
-  onMenuToggle?: () => void;
   isSearchOpen?: boolean;
   isCartOpen?: boolean;
-  isMenuOpen?: boolean;
 }
 
 const navigationItems = [
+  { label: 'Home', href: '/' },
   { label: 'Shop', href: '/shop' },
 ];
 
@@ -29,13 +28,12 @@ export default function Header({
   wishlistItemCount = 0,
   onSearchToggle,
   onCartToggle,
-  onMenuToggle,
   isSearchOpen = false,
   isCartOpen = false,
-  isMenuOpen = false,
 }: HeaderProps) {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const isActiveRoute = (href: string) => {
     const [basePath] = href.split('#');
@@ -67,7 +65,7 @@ export default function Header({
         <div className="relative mx-auto flex h-16 w-full items-center justify-between px-6 sm:px-12 lg:h-24 lg:px-20">
           <div className="flex items-center gap-3">
             <button
-              onClick={onMenuToggle}
+              onClick={() => setIsMenuOpen((v) => !v)}
               className="focus-ring p-2 text-foreground transition-colors hover:text-pink-dark lg:hidden"
               aria-label="Toggle menu"
             >
@@ -195,14 +193,14 @@ export default function Header({
                         ? 'border-pink-dark text-pink-dark'
                         : 'border-transparent text-foreground'
                     )}
-                    onClick={() => onMenuToggle?.()}
+                    onClick={() => setIsMenuOpen(false)}
                   >
                     {item.label}
                   </Link>
                 ))}
 
                 <div className="border-t border-line pt-6">
-                  <Link href="/shop" className="btn-primary w-full" onClick={() => onMenuToggle?.()}>
+                  <Link href="/shop" className="btn-primary w-full" onClick={() => setIsMenuOpen(false)}>
                     Shop products
                   </Link>
                 </div>

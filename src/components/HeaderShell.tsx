@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import Header from './Header';
 import SearchModal from './SearchModal';
+import Cart from './Cart';
+import { useCart } from '@/context/CartContext';
 
 interface SearchProduct {
   id: string;
@@ -15,33 +17,33 @@ interface SearchProduct {
 
 interface HeaderShellProps {
   products?: SearchProduct[];
-  cartItemCount?: number;
-  wishlistItemCount?: number;
 }
 
-export default function HeaderShell({
-  products = [],
-  cartItemCount = 0,
-  wishlistItemCount = 0,
-}: HeaderShellProps) {
+export default function HeaderShell({ products = [] }: HeaderShellProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { items, isOpen, openCart, closeCart, updateQuantity, removeItem, itemCount } = useCart();
 
   return (
     <>
       <Header
-        cartItemCount={cartItemCount}
-        wishlistItemCount={wishlistItemCount}
+        cartItemCount={itemCount}
         isSearchOpen={isSearchOpen}
-        isMenuOpen={isMenuOpen}
         onSearchToggle={() => setIsSearchOpen((v) => !v)}
-        onMenuToggle={() => setIsMenuOpen((v) => !v)}
+        onCartToggle={openCart}
       />
       <SearchModal
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
         onSearch={() => setIsSearchOpen(false)}
         products={products}
+      />
+      <Cart
+        isOpen={isOpen}
+        onClose={closeCart}
+        items={items}
+        onUpdateQuantity={updateQuantity}
+        onRemoveItem={removeItem}
+        onCheckout={async () => closeCart()}
       />
     </>
   );

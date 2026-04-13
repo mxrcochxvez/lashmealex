@@ -8,6 +8,7 @@ import { clsx } from 'clsx';
 import { LoadingButton } from './LoadingStates';
 import type { ProductCardProduct } from './ProductCard';
 import type { StoreVariant } from '@/lib/catalog';
+import { useCart } from '@/context/CartContext';
 
 interface Product extends ProductCardProduct {
   images?: string[];
@@ -39,6 +40,7 @@ export default function QuickViewModal({
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [copied, setCopied] = useState(false);
+  const { addItem } = useCart();
 
   useEffect(() => {
     setSelectedVariantId(product?.variants?.[0]?.id ?? '');
@@ -70,7 +72,14 @@ export default function QuickViewModal({
 
   const handleAddToCart = async () => {
     setIsAddingToCart(true);
-    await onAddToCart(cartProduct, quantity);
+    addItem({
+      id: cartProduct.id,
+      name: cartProduct.name,
+      price: cartProduct.price,
+      image: cartProduct.image,
+      category: cartProduct.category,
+    }, quantity);
+    onAddToCart(cartProduct, quantity);
     setIsAddingToCart(false);
     onClose();
   };

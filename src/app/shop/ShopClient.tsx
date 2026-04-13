@@ -11,6 +11,7 @@ import ProductCard, { type ProductCardProduct } from '@/components/ProductCard';
 import QuickViewModal from '@/components/QuickViewModal';
 import SearchModal from '@/components/SearchModal';
 import type { StoreProduct } from '@/lib/catalog';
+import { useCart } from '@/context/CartContext';
 
 interface ShopClientProps {
   initialProducts: StoreProduct[];
@@ -39,6 +40,7 @@ export default function ShopClient({
   initialProducts,
   initialCategory,
 }: ShopClientProps) {
+  const { items: cartItems, isOpen: isCartOpen, openCart, closeCart, addItem, removeItem, updateQuantity, itemCount } = useCart();
   const [filters, setFilters] = useState<FilterOptions>({
     category: initialCategory ? [initialCategory] : [],
     priceRange: [0, priceCeiling],
@@ -49,11 +51,9 @@ export default function ShopClient({
   });
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<ProductCardProduct | null>(null);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
-  const [cartItems, setCartItems] = useState<Array<CartProduct & { quantity: number }>>([]);
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -89,32 +89,13 @@ export default function ShopClient({
   }, [filters, initialProducts, searchQuery]);
 
   const handleAddToCart = (product: CartProduct, quantity = 1) => {
-    setCartItems((items) => {
-      const existingItem = items.find((item) => item.id === product.id);
-
-      if (existingItem) {
-        return items.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item,
-        );
-      }
-
-      return [...items, { ...product, quantity }];
-    });
-  };
-
-  const handleRemoveFromCart = (itemId: string) => {
-    setCartItems((items) => items.filter((item) => item.id !== itemId));
-  };
-
-  const handleUpdateQuantity = (itemId: string, quantity: number) => {
-    if (quantity === 0) {
-      handleRemoveFromCart(itemId);
-      return;
-    }
-
-    setCartItems((items) =>
-      items.map((item) => (item.id === itemId ? { ...item, quantity } : item)),
-    );
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+      category: product.category,
+    }, quantity);
   };
 
   const handleToggleWishlist = (productId: string) => {
@@ -128,19 +109,15 @@ export default function ShopClient({
     setIsQuickViewOpen(true);
   };
 
-  const cartItemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-
   return (
     <div className="min-h-screen bg-background">
       <Header
-        cartItemCount={cartItemCount}
+        cartItemCount={itemCount}
         wishlistItemCount={wishlist.length}
         onSearchToggle={() => setIsSearchOpen(true)}
-        onCartToggle={() => setIsCartOpen(true)}
-        onMenuToggle={() => setIsMenuOpen(!isMenuOpen)}
+        onCartToggle={openCart}
         isSearchOpen={isSearchOpen}
         isCartOpen={isCartOpen}
-        isMenuOpen={isMenuOpen}
       />
 
       <main className="w-full px-6 py-16 sm:px-12 lg:px-20 lg:py-24">
@@ -270,11 +247,11 @@ export default function ShopClient({
 
       <Cart
         isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
+        onClose={closeCart}
         items={cartItems}
-        onUpdateQuantity={handleUpdateQuantity}
-        onRemoveItem={handleRemoveFromCart}
-        onCheckout={async () => undefined}
+        onUpdateQuantity={updateQuantity}
+        onRemoveItem={removeItem}
+        onCheckout={async () => closeCart()}
       />
     </div>
   );

@@ -178,57 +178,46 @@ export default function QuickViewModal({
               </div>
 
               {/* Product Details */}
-              <div className="flex-1 p-6 lg:p-10 overflow-y-auto bg-white/40 backdrop-blur-md">
-                <div className="space-y-6 lg:space-y-8">
+              <div className="flex-1 flex flex-col p-5 lg:p-7 overflow-hidden bg-white/40 backdrop-blur-md">
+                <div className="flex flex-col gap-4 h-full">
                   {/* Header */}
-                  <div className="space-y-3">
+                  <div>
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold uppercase tracking-[0.3em] text-pink-dark">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-pink-dark">
                           {product.category}
                         </p>
-                        <h2 className="mt-3 font-display text-3xl font-medium tracking-tight text-foreground lg:text-4xl">
+                        <h2 className="mt-1.5 font-display text-2xl font-medium tracking-tight text-foreground">
                           {product.name}
                         </h2>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         <button
                           onClick={() => onToggleWishlist(product.id)}
-                          className="focus-ring rounded-full border border-line bg-white p-3 text-foreground transition-all hover:scale-110 hover:text-pink-dark shadow-sm"
+                          className="focus-ring rounded-full border border-line bg-white p-2.5 text-foreground transition-all hover:scale-110 hover:text-pink-dark shadow-sm"
                           aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
                         >
-                          <Heart
-                            size={18}
-                            className={clsx('transition-colors', isWishlisted && 'fill-pink-dark text-pink-dark')}
-                          />
+                          <Heart size={16} className={clsx('transition-colors', isWishlisted && 'fill-pink-dark text-pink-dark')} />
                         </button>
                         <button
                           onClick={onClose}
-                          className="focus-ring rounded-full border border-line bg-white p-3 text-foreground transition-all hover:bg-foreground hover:text-background shadow-sm"
+                          className="focus-ring rounded-full border border-line bg-white p-2.5 text-foreground transition-all hover:bg-foreground hover:text-background shadow-sm"
                           aria-label="Close quick view"
                         >
-                          <X size={18} />
+                          <X size={16} />
                         </button>
                       </div>
                     </div>
 
                     {/* Rating */}
                     {product.rating && (
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-3 mt-2">
+                        <div className="flex items-center gap-1">
                           {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              size={18}
-                              className={clsx(
-                                i < Math.floor(product.rating!)
-                                  ? 'fill-yellow-400 text-yellow-400'
-                                  : 'text-line'
-                              )}
-                            />
+                            <Star key={i} size={13} className={clsx(i < Math.floor(product.rating!) ? 'fill-yellow-400 text-yellow-400' : 'text-line')} />
                           ))}
                         </div>
-                        <span className="text-sm font-bold uppercase tracking-widest text-muted">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted">
                           {product.rating} ({product.reviewCount || 0} reviews)
                         </span>
                       </div>
@@ -236,16 +225,12 @@ export default function QuickViewModal({
                   </div>
 
                   {/* Price */}
-                  <div className="flex items-center gap-4">
-                    <span className="text-4xl font-bold tracking-tight text-foreground">
-                      ${activePrice}
-                    </span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl font-bold tracking-tight text-foreground">${activePrice}</span>
                     {activeCompareAtPrice && activeCompareAtPrice > activePrice && (
                       <>
-                        <span className="text-2xl text-muted line-through opacity-50">
-                          ${activeCompareAtPrice}
-                        </span>
-                        <span className="bg-pink px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-white">
+                        <span className="text-lg text-muted line-through opacity-50">${activeCompareAtPrice}</span>
+                        <span className="bg-pink px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-white">
                           Save ${activeCompareAtPrice - activePrice}
                         </span>
                       </>
@@ -253,48 +238,26 @@ export default function QuickViewModal({
                   </div>
 
                   {/* Description */}
-                  <div className="space-y-4">
-                    <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-foreground">Description</h3>
-                    <p className="text-lg leading-relaxed text-muted">
-                      {product.description}
-                    </p>
-                  </div>
-
-                  {/* Features */}
-                  {product.features && product.features.length > 0 && (
-                    <div className="space-y-4">
-                      <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-foreground">Key Features</h3>
-                      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        {product.features.map((feature, index) => (
-                          <li key={index} className="flex items-center gap-4 group">
-                            <div className="h-1.5 w-1.5 flex-shrink-0 bg-pink transition-all group-hover:w-4" />
-                            <span className="text-sm font-medium text-muted">{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                  <p className="text-sm leading-relaxed text-muted line-clamp-2">
+                    {product.description}
+                  </p>
 
                   {/* Add to Cart Section */}
-                  <div className="space-y-6 border-t border-line pt-6">
+                  <div className="flex flex-col gap-3 border-t border-line pt-4 mt-auto">
                     {variants.length > 0 && (
-                      <div className="space-y-3">
-                        <label
-                          htmlFor="quickview-variant"
-                          className="block text-xs font-bold uppercase tracking-[0.2em] text-foreground"
-                        >
+                      <div>
+                        <label htmlFor="quickview-variant" className="block text-[10px] font-bold uppercase tracking-[0.2em] text-foreground mb-1.5">
                           Select Tray Size + Curl
                         </label>
                         <select
                           id="quickview-variant"
                           value={selectedVariant?.id ?? ''}
                           onChange={(event) => setSelectedVariantId(event.target.value)}
-                          className="w-full border border-line bg-white px-4 py-4 text-sm text-foreground outline-none"
+                          className="w-full border border-line bg-white px-3 py-2.5 text-sm text-foreground outline-none"
                         >
                           {variants.map((variant) => (
                             <option key={variant.id} value={variant.id}>
-                              {(variant.variantName ?? variant.name)} · ${variant.price} ·{' '}
-                              {variant.inStock ? `${variant.inventory} in stock` : 'Out of stock'}
+                              {(variant.variantName ?? variant.name)} · ${variant.price} · {variant.inStock ? `${variant.inventory} in stock` : 'Out of stock'}
                             </option>
                           ))}
                         </select>
@@ -302,70 +265,44 @@ export default function QuickViewModal({
                     )}
 
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase tracking-[0.2em] text-foreground">Quantity</span>
-                      <div className="flex items-center gap-4 border border-line p-1">
-                        <button
-                          onClick={decrementQuantity}
-                          disabled={quantity <= 1}
-                          className="focus-ring flex h-10 w-10 items-center justify-center bg-transparent text-foreground transition-colors hover:bg-line disabled:cursor-not-allowed disabled:opacity-30"
-                          aria-label="Decrease quantity"
-                        >
-                          -
-                        </button>
-                        <span className="w-8 text-center font-bold text-foreground">
-                          {quantity}
-                        </span>
-                        <button
-                          onClick={incrementQuantity}
-                          className="focus-ring flex h-10 w-10 items-center justify-center bg-transparent text-foreground transition-colors hover:bg-line"
-                          aria-label="Increase quantity"
-                        >
-                          +
-                        </button>
+                      <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground">Quantity</span>
+                      <div className="flex items-center gap-3 border border-line">
+                        <button onClick={decrementQuantity} disabled={quantity <= 1} className="focus-ring flex h-8 w-8 items-center justify-center text-foreground transition-colors hover:bg-line disabled:cursor-not-allowed disabled:opacity-30" aria-label="Decrease quantity">-</button>
+                        <span className="w-6 text-center text-sm font-bold text-foreground">{quantity}</span>
+                        <button onClick={incrementQuantity} className="focus-ring flex h-8 w-8 items-center justify-center text-foreground transition-colors hover:bg-line" aria-label="Increase quantity">+</button>
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-4">
-                      <LoadingButton
-                        isLoading={isAddingToCart}
-                        disabled={!activeInStock}
-                        className={clsx(
-                          'w-full py-5 text-sm font-bold uppercase tracking-[0.3em] transition-all',
-                          activeInStock ? 'btn-primary' : 'cursor-not-allowed bg-line text-muted'
-                        )}
-                        onClick={handleAddToCart}
+                    <LoadingButton
+                      isLoading={isAddingToCart}
+                      disabled={!activeInStock}
+                      className={clsx('w-full py-3.5 text-xs font-bold uppercase tracking-[0.3em] transition-all', activeInStock ? 'btn-primary' : 'cursor-not-allowed bg-line text-muted')}
+                      onClick={handleAddToCart}
+                    >
+                      {activeInStock ? 'Add to Bag' : 'Out of Stock'}
+                    </LoadingButton>
+
+                    <div className="flex items-center gap-2">
+                      <Link href={productUrl} className="flex-1 btn-secondary py-3 text-center text-[10px]" onClick={onClose}>
+                        View Full Details
+                      </Link>
+                      <button
+                        onClick={async () => {
+                          const fullUrl = `${window.location.origin}${productUrl}`;
+                          await navigator.clipboard.writeText(fullUrl);
+                          setCopied(true);
+                          setTimeout(() => setCopied(false), 2000);
+                        }}
+                        className="flex h-[42px] w-[42px] items-center justify-center border border-foreground text-foreground transition-all hover:bg-foreground hover:text-background"
+                        aria-label="Share product"
                       >
-                        {activeInStock ? 'Add to Bag' : 'Out of Stock'}
-                      </LoadingButton>
-                      
-                      <div className="flex items-center justify-center gap-3 text-[10px] font-bold uppercase tracking-widest text-muted">
-                        <div className="h-1 w-1 rounded-full bg-pink" />
-                        Ready for Fresno pickup in 2-4 hours
-                        <div className="h-1 w-1 rounded-full bg-pink" />
-                      </div>
-
-                      <div className="flex items-center gap-3 pt-2">
-                        <Link
-                          href={productUrl}
-                          className="flex-1 btn-secondary py-4 text-center text-[10px]"
-                          onClick={onClose}
-                        >
-                          View Full Details
-                        </Link>
-                        <button
-                          onClick={async () => {
-                            const fullUrl = `${window.location.origin}${productUrl}`;
-                            await navigator.clipboard.writeText(fullUrl);
-                            setCopied(true);
-                            setTimeout(() => setCopied(false), 2000);
-                          }}
-                          className="flex h-[52px] w-[52px] items-center justify-center border border-foreground text-foreground transition-all hover:bg-foreground hover:text-background"
-                          aria-label="Share product"
-                        >
-                          {copied ? <Check size={16} /> : <Share2 size={16} />}
-                        </button>
-                      </div>
+                        {copied ? <Check size={14} /> : <Share2 size={14} />}
+                      </button>
                     </div>
+
+                    <p className="text-center text-[10px] font-bold uppercase tracking-widest text-muted">
+                      <span className="text-pink">·</span> Fresno pickup in 2–4 hours <span className="text-pink">·</span>
+                    </p>
                   </div>
                 </div>
               </div>

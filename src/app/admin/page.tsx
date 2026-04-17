@@ -5,6 +5,7 @@ import { requireAdmin } from '@/lib/admin-auth';
 import { getAdminCatalogStats, listAdminProductGroups } from '@/lib/catalog';
 import { formatUsdFromCents } from '@/lib/money';
 import { getAdminOrderStats, listAdminOrders } from '@/lib/orders';
+import { getAdminCartStats } from '@/lib/cart';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,11 +41,12 @@ const fulfillmentLabel: Record<string, string> = {
 export default async function AdminPage() {
   await requireAdmin();
 
-  const [productGroups, catalogStats, orders, orderStats] = await Promise.all([
+  const [productGroups, catalogStats, orders, orderStats, cartStats] = await Promise.all([
     listAdminProductGroups(),
     getAdminCatalogStats(),
     listAdminOrders(),
     getAdminOrderStats(),
+    getAdminCartStats(),
   ]);
 
   return (
@@ -64,6 +66,9 @@ export default async function AdminPage() {
               <a href="#orders" className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted transition-colors hover:text-foreground">
                 Orders
               </a>
+              <Link href="/admin/carts" className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted transition-colors hover:text-foreground">
+                Carts
+              </Link>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -102,9 +107,9 @@ export default async function AdminPage() {
             <p className="mt-2 text-[10px] text-muted">trays available</p>
           </div>
           <div className="border border-foreground bg-white p-6">
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">Stock Value</p>
-            <p className="mt-4 font-display text-4xl text-foreground">{formatUsdFromCents(catalogStats.inventoryValue)}</p>
-            <p className="mt-2 text-[10px] text-muted">at retail price</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">Active Carts</p>
+            <p className="mt-4 font-display text-4xl text-foreground">{cartStats.activeCount}</p>
+            <p className="mt-2 text-[10px] text-muted">{cartStats.abandonedCount} abandoned</p>
           </div>
           <div className="border border-foreground bg-white p-6">
             <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">Revenue Collected</p>

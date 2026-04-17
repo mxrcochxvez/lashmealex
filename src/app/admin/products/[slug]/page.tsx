@@ -232,230 +232,182 @@ export default async function AdminProductPage({ params }: AdminProductPageProps
           </div>
         </div>
 
-        {/* Variants */}
-        <section className="space-y-6">
-          <div className="flex items-end justify-between">
+        {/* Variants Grid */}
+        <section className="space-y-10">
+          <div className="flex items-end justify-between border-b border-foreground pb-6">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-pink-dark">Variations</p>
-              <h2 className="mt-2 font-display text-4xl tracking-tighter text-foreground">Manage Variants</h2>
+              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-pink-dark">Inventory</p>
+              <h2 className="mt-2 font-display text-4xl tracking-tighter text-foreground">Product Variants</h2>
             </div>
-            <p className="text-xs text-muted">{product.variantCount} variant{product.variantCount !== 1 ? 's' : ''}</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-muted">{product.variantCount} total options</p>
           </div>
 
-          <div className="space-y-4">
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {product.variants.map((variant) => (
-              <div key={variant.id} className="border border-foreground bg-white">
-                {/* Variant Header */}
-                <div className={`flex items-center justify-between border-b border-foreground px-5 py-3.5 ${variant.isActive ? 'bg-white' : 'bg-[#faf9f7]'}`}>
-                  <div className="flex items-center gap-3">
-                    <p className="font-display text-xl text-foreground">{variant.variantName ?? variant.name}</p>
-                    <div className="flex gap-1.5">
-                      <span className={`border px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] ${variant.isActive ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-slate-100 text-slate-500'}`}>
-                        {variant.isActive ? 'Active' : 'Hidden'}
-                      </span>
-                      {variant.isFeatured && (
-                        <span className="border border-pink-200 bg-pink-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] text-pink-dark">
-                          Featured
+              <div key={variant.id} className="group flex flex-col border border-foreground bg-white transition-shadow hover:shadow-xl">
+                {/* Card Preview Area */}
+                <div className="relative aspect-[4/3] overflow-hidden bg-[#f5f3f0]">
+                  {variant.imageUrl ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img src={variant.imageUrl} alt={variant.variantName ?? variant.name} className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex h-full flex-col justify-between p-6">
+                      <div className="flex justify-between">
+                        <span className="border border-foreground bg-white px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.15em] text-foreground">
+                          {variant.category}
                         </span>
-                      )}
+                        {!variant.isActive && (
+                          <span className="bg-slate-500 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.15em] text-white">
+                            Hidden
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-center">
+                        <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-muted">Lashmealex</p>
+                        <span className="mt-2 block font-display text-3xl font-medium tracking-tighter text-foreground">
+                          {variant.variantName?.split(' ').slice(0, 2).join(' ') ?? 'Preview'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-[9px] font-bold uppercase tracking-[0.1em] text-muted">
+                        <span>Variant</span>
+                        <span>#{variant.id.slice(-4)}</span>
+                      </div>
                     </div>
+                  )}
+
+                  <div className="absolute left-4 top-4 flex flex-col gap-2">
+                    {variant.isFeatured && (
+                      <span className="bg-pink-dark px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.15em] text-white">
+                        Featured
+                      </span>
+                    )}
+                    {variant.inventory === 0 && (
+                      <span className="bg-red-600 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.15em] text-white">
+                        Sold Out
+                      </span>
+                    )}
                   </div>
-                  <div className="text-right">
-                    <p className="font-display text-lg text-foreground">{formatUsdFromCents(variant.price)}</p>
-                    <p className="text-[10px] text-muted">{variant.inventory} in stock</p>
+
+                  {/* Quick Image Upload Overlay */}
+                  <div className="absolute inset-x-0 bottom-0 translate-y-full bg-foreground/90 p-4 backdrop-blur-sm transition-transform group-hover:translate-y-0">
+                    <form action={uploadVariantImageAction} className="flex flex-col gap-2">
+                      <input type="hidden" name="productId" value={variant.id} />
+                      <input type="hidden" name="slug" value={variant.slug} />
+                      <input type="hidden" name="parentProductId" value={product.id} />
+                      <input type="hidden" name="parentSlug" value={product.slug} />
+                      <input
+                        type="file"
+                        name="image"
+                        accept="image/*"
+                        required
+                        className="w-full text-[10px] text-white file:mr-2 file:border-0 file:bg-white file:px-2 file:py-0.5 file:text-[9px] file:font-bold file:uppercase file:text-foreground"
+                      />
+                      <button type="submit" className="w-full bg-white py-1.5 text-[9px] font-bold uppercase tracking-widest text-foreground hover:bg-pink-dark hover:text-white transition-colors">
+                        Upload Variant Image
+                      </button>
+                    </form>
                   </div>
                 </div>
 
-                {/* Variant Form */}
-                <form action={updateVariantAction} className="p-5">
+                {/* Condensed Editor Form */}
+                <form action={updateVariantAction} className="flex flex-1 flex-col p-6">
                   <input type="hidden" name="productId" value={variant.id} />
                   <input type="hidden" name="slug" value={variant.slug} />
                   <input type="hidden" name="parentProductId" value={product.id} />
                   <input type="hidden" name="parentSlug" value={product.slug} />
                   <input type="hidden" name="parentProductName" value={product.name} />
 
-                  <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-                    {/* Identity */}
-                    <div className="space-y-3">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted">Identity</p>
+                  <div className="flex-1 space-y-5">
+                    <div className="space-y-4">
                       <label className="block space-y-1.5">
-                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted">Variant Name</span>
+                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted">Name</span>
                         <input
                           type="text"
                           name="variantName"
                           required
                           defaultValue={variant.variantName ?? variant.name}
-                          className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none focus:border-pink-dark"
+                          className="w-full border-b border-foreground bg-transparent py-1 text-sm font-semibold text-foreground outline-none focus:border-pink-dark"
                         />
                       </label>
-                      <label className="block space-y-1.5">
-                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted">Category</span>
-                        <input
-                          type="text"
-                          name="category"
-                          defaultValue={variant.category}
-                          className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none focus:border-pink-dark"
-                        />
-                      </label>
-                      <label className="block space-y-1.5">
-                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted">Sort Order</span>
-                        <input
-                          type="number"
-                          name="sortOrder"
-                          defaultValue={variant.sortOrder}
-                          className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none focus:border-pink-dark"
-                        />
-                      </label>
-                    </div>
 
-                    {/* Pricing & Stock */}
-                    <div className="space-y-3">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted">Pricing & Stock</p>
-                      <label className="block space-y-1.5">
-                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted">Price</span>
-                        <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted">$</span>
+                      <div className="grid grid-cols-2 gap-4">
+                        <label className="block space-y-1.5">
+                          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted">Price ($)</span>
                           <input
                             type="number"
                             name="price"
                             step="0.01"
                             min="0"
                             defaultValue={(variant.price / 100).toFixed(2)}
-                            className="w-full border border-foreground bg-transparent py-2 pl-7 pr-3 text-sm text-foreground outline-none focus:border-pink-dark"
+                            className="w-full border-b border-foreground bg-transparent py-1 text-sm text-foreground outline-none focus:border-pink-dark"
                           />
-                        </div>
-                      </label>
-                      <label className="block space-y-1.5">
-                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted">Compare-At Price</span>
-                        <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted">$</span>
+                        </label>
+                        <label className="block space-y-1.5">
+                          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted">Inventory</span>
                           <input
                             type="number"
-                            name="compareAtPrice"
-                            step="0.01"
+                            name="inventory"
                             min="0"
-                            defaultValue={variant.compareAtPrice ? (variant.compareAtPrice / 100).toFixed(2) : ''}
-                            className="w-full border border-foreground bg-transparent py-2 pl-7 pr-3 text-sm text-foreground outline-none focus:border-pink-dark"
+                            defaultValue={variant.inventory}
+                            className="w-full border-b border-foreground bg-transparent py-1 text-sm text-foreground outline-none focus:border-pink-dark"
                           />
-                        </div>
-                      </label>
-                      <label className="block space-y-1.5">
-                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted">Inventory</span>
-                        <input
-                          type="number"
-                          name="inventory"
-                          min="0"
-                          defaultValue={variant.inventory}
-                          className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none focus:border-pink-dark"
-                        />
-                      </label>
-                    </div>
-
-                    {/* Content */}
-                    <div className="space-y-3">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted">Content</p>
-                      <label className="block space-y-1.5">
-                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted">Description</span>
-                        <textarea
-                          name="description"
-                          rows={4}
-                          defaultValue={variant.description ?? ''}
-                          className="w-full resize-none border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none focus:border-pink-dark"
-                        />
-                      </label>
-                      <label className="block space-y-1.5">
-                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted">Image URL</span>
-                        <input
-                          type="url"
-                          name="imageUrl"
-                          defaultValue={variant.imageUrl ?? ''}
-                          className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none focus:border-pink-dark"
-                        />
-                      </label>
-                    </div>
-
-                    {/* Visibility */}
-                    <div className="space-y-3">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted">Visibility</p>
-
-                      <div className="space-y-2.5 border border-[#e5e2dd] bg-[#f5f3f0] p-3">
-                        <label className="flex cursor-pointer items-center gap-2.5 text-xs text-foreground">
-                          <input type="checkbox" name="isActive" defaultChecked={variant.isActive} className="h-4 w-4 accent-foreground" />
-                          <span className="font-semibold">Active on storefront</span>
-                        </label>
-                        <label className="flex cursor-pointer items-center gap-2.5 text-xs text-foreground">
-                          <input type="checkbox" name="isFeatured" defaultChecked={variant.isFeatured} className="h-4 w-4 accent-foreground" />
-                          <span className="font-semibold">Featured on homepage</span>
                         </label>
                       </div>
+                    </div>
 
-                      <div className="space-y-2 border border-[#e5e2dd] bg-[#f5f3f0] p-3">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted">Variant Image</p>
-                        {variant.imageUrl && (
-                          <div className="aspect-square w-full overflow-hidden border border-[#e5e2dd] bg-white">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={variant.imageUrl} alt={variant.variantName ?? variant.name} className="h-full w-full object-cover" />
-                          </div>
-                        )}
-                        <input
-                          type="file"
-                          name="image"
-                          accept="image/*"
-                          className="w-full bg-transparent text-xs text-foreground file:mr-2 file:border-0 file:bg-foreground file:px-2 file:py-1 file:text-[9px] file:font-bold file:uppercase file:tracking-[0.1em] file:text-background"
-                        />
-                        <button
-                          type="submit"
-                          formAction={uploadVariantImageAction}
-                          className="w-full border border-foreground px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-foreground transition-colors hover:bg-foreground hover:text-white"
-                        >
-                          Upload Image
-                        </button>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted">Settings</span>
+                        <p className="text-[9px] text-muted">Pos: {variant.sortOrder}</p>
                       </div>
-
-                      <p className="text-[10px] text-muted">Updated {formatDate(variant.updatedAt)}</p>
+                      <div className="flex gap-4 border border-[#e5e2dd] bg-[#f5f3f0] p-3">
+                        <label className="flex cursor-pointer items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-foreground">
+                          <input type="checkbox" name="isActive" defaultChecked={variant.isActive} className="h-3 w-3 accent-foreground" />
+                          Live
+                        </label>
+                        <label className="flex cursor-pointer items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-foreground">
+                          <input type="checkbox" name="isFeatured" defaultChecked={variant.isFeatured} className="h-3 w-3 accent-foreground" />
+                          Featured
+                        </label>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Footer Buttons */}
-                  <div className="mt-5 flex items-center justify-between border-t border-[#e5e2dd] pt-4">
-                    <p className="text-[10px] text-muted">{variant.slug}</p>
-                    <div className="flex gap-3">
-                      <button
-                        type="submit"
-                        formAction={deleteVariantAction}
-                        className="border border-red-200 px-4 py-2 text-xs font-bold uppercase tracking-[0.15em] text-red-600 transition-colors hover:border-red-600 hover:bg-red-600 hover:text-white"
-                      >
-                        Delete
-                      </button>
-                      <button
-                        type="submit"
-                        className="border border-foreground bg-foreground px-5 py-2 text-xs font-bold uppercase tracking-[0.15em] text-white transition-colors hover:bg-transparent hover:text-foreground"
-                      >
-                        Save Variant
-                      </button>
-                    </div>
+                  <div className="mt-8 flex items-center justify-between gap-3 pt-6 border-t border-line">
+                    <button
+                      type="submit"
+                      formAction={deleteVariantAction}
+                      className="text-[10px] font-bold uppercase tracking-widest text-red-600 hover:underline"
+                    >
+                      Delete
+                    </button>
+                    <button
+                      type="submit"
+                      className="border border-foreground bg-foreground px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-white transition-colors hover:bg-transparent hover:text-foreground"
+                    >
+                      Save Changes
+                    </button>
                   </div>
                 </form>
               </div>
             ))}
-          </div>
 
-          {/* Add Variant Form */}
-          <div className="border border-foreground bg-white">
-            <div className="border-b border-foreground px-5 py-4">
-              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-pink-dark">Add Variation</p>
-              <h3 className="mt-1 font-display text-2xl tracking-tighter text-foreground">New Variant</h3>
-            </div>
+            {/* Add Variant Card */}
+            <div className="flex flex-col border border-dashed border-foreground bg-[#faf9f7] p-8">
+              <div className="mb-8">
+                <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-pink-dark">Variation</p>
+                <h3 className="mt-2 font-display text-2xl tracking-tighter text-foreground">Add New Variant</h3>
+                <p className="mt-1 text-xs text-muted">Create another option for this product.</p>
+              </div>
 
-            <form action={createVariantAction} className="p-5">
-              <input type="hidden" name="parentProductId" value={product.id} />
-              <input type="hidden" name="parentProductName" value={product.name} />
-              <input type="hidden" name="parentSlug" value={product.slug} />
-              <input type="hidden" name="description" value={product.description} />
-              <input type="hidden" name="category" value={product.category} />
-              <input type="hidden" name="imageUrl" value={product.image ?? ''} />
+              <form action={createVariantAction} className="flex flex-1 flex-col gap-6">
+                <input type="hidden" name="parentProductId" value={product.id} />
+                <input type="hidden" name="parentProductName" value={product.name} />
+                <input type="hidden" name="parentSlug" value={product.slug} />
+                <input type="hidden" name="description" value={product.description} />
+                <input type="hidden" name="category" value={product.category} />
+                <input type="hidden" name="imageUrl" value={product.image ?? ''} />
 
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <label className="block space-y-1.5">
                   <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted">Variant Name *</span>
                   <input
@@ -463,14 +415,13 @@ export default async function AdminProductPage({ params }: AdminProductPageProps
                     name="variantName"
                     required
                     placeholder="e.g. 0.03 CC 10-15mm"
-                    className="w-full border border-foreground bg-transparent px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-muted/40 focus:border-pink-dark"
+                    className="w-full border-b border-foreground bg-transparent py-1 text-sm text-foreground outline-none placeholder:text-muted/40 focus:border-pink-dark"
                   />
                 </label>
 
-                <label className="block space-y-1.5">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted">Price *</span>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted">$</span>
+                <div className="grid grid-cols-2 gap-6">
+                  <label className="block space-y-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted">Price ($) *</span>
                     <input
                       type="number"
                       name="price"
@@ -478,62 +429,44 @@ export default async function AdminProductPage({ params }: AdminProductPageProps
                       step="0.01"
                       required
                       placeholder="0.00"
-                      className="w-full border border-foreground bg-transparent py-2.5 pl-7 pr-3 text-sm text-foreground outline-none placeholder:text-muted/40 focus:border-pink-dark"
+                      className="w-full border-b border-foreground bg-transparent py-1 text-sm text-foreground outline-none focus:border-pink-dark"
                     />
-                  </div>
-                </label>
-
-                <label className="block space-y-1.5">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted">Compare-At</span>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted">$</span>
+                  </label>
+                  <label className="block space-y-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted">Inventory *</span>
                     <input
                       type="number"
-                      name="compareAtPrice"
+                      name="inventory"
                       min="0"
-                      step="0.01"
-                      placeholder="0.00"
-                      className="w-full border border-foreground bg-transparent py-2.5 pl-7 pr-3 text-sm text-foreground outline-none placeholder:text-muted/40 focus:border-pink-dark"
+                      defaultValue="0"
+                      required
+                      className="w-full border-b border-foreground bg-transparent py-1 text-sm text-foreground outline-none focus:border-pink-dark"
                     />
-                  </div>
-                </label>
-
-                <label className="block space-y-1.5">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted">Inventory *</span>
-                  <input
-                    type="number"
-                    name="inventory"
-                    min="0"
-                    defaultValue="0"
-                    required
-                    className="w-full border border-foreground bg-transparent px-3 py-2.5 text-sm text-foreground outline-none focus:border-pink-dark"
-                  />
-                </label>
-              </div>
-
-              <div className="mt-4 flex flex-wrap items-center gap-5">
-                <label className="flex cursor-pointer items-center gap-2.5 text-xs text-foreground">
-                  <input type="checkbox" name="isActive" defaultChecked className="h-4 w-4 accent-foreground" />
-                  <span className="font-semibold">Active on storefront</span>
-                </label>
-                <label className="flex cursor-pointer items-center gap-2.5 text-xs text-foreground">
-                  <input type="checkbox" name="isFeatured" className="h-4 w-4 accent-foreground" />
-                  <span className="font-semibold">Featured on homepage</span>
-                </label>
-                <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-muted">
-                  <span>Sort Order</span>
-                  <input
-                    type="number"
-                    name="sortOrder"
-                    defaultValue={product.variantCount}
-                    className="w-16 border border-foreground bg-transparent px-2 py-1.5 text-sm text-foreground outline-none focus:border-pink-dark"
-                  />
+                  </label>
                 </div>
-                <button type="submit" className="btn-primary ml-auto">
-                  Add Variant →
-                </button>
-              </div>
-            </form>
+
+                <div className="mt-auto space-y-6 pt-6">
+                  <div className="flex gap-6">
+                    <label className="flex cursor-pointer items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-foreground">
+                      <input type="checkbox" name="isActive" defaultChecked className="h-3 w-3 accent-foreground" />
+                      Live
+                    </label>
+                    <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted">
+                      <span>Order:</span>
+                      <input
+                        type="number"
+                        name="sortOrder"
+                        defaultValue={product.variantCount}
+                        className="w-12 border-b border-foreground bg-transparent text-center text-sm text-foreground outline-none"
+                      />
+                    </div>
+                  </div>
+                  <button type="submit" className="w-full bg-foreground py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-white transition-colors hover:bg-pink-dark">
+                    Create Variant →
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </section>
       </div>

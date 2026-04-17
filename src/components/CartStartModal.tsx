@@ -36,7 +36,7 @@ export default function CartStartModal() {
     <AnimatePresence>
       {isModalOpen && (
         <motion.div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4"
+          className="fixed inset-0 z-modal flex items-center justify-center bg-black/50 px-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

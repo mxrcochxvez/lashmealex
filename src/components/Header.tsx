@@ -59,7 +59,7 @@ export default function Header({
       <header
         className={clsx(
           'sticky top-0 z-sticky transition-all duration-300',
-          isScrolled ? 'border-b border-foreground bg-background' : 'bg-transparent'
+          isScrolled ? 'border-b border-foreground bg-background' : 'bg-background/80 backdrop-blur-sm'
         )}
       >
         <div className="relative mx-auto flex h-16 w-full items-center justify-between px-6 sm:px-12 lg:h-24 lg:px-20">
@@ -97,7 +97,7 @@ export default function Header({
             </Link>
           </div>
 
-          <nav className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center lg:flex">
+          <nav className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-10 lg:flex">
             {navigationItems.map((item) => (
               <Link
                 key={item.label}

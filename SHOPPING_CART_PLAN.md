@@ -1,5 +1,61 @@
 # Shopping Cart Plan
 
+---
+
+## Execution Checklist (live — update as we go)
+
+**Phase 1 — Foundations**
+- [x] Schema: add `carts` + `cart_items` tables to `src/db/schema.ts`
+- [x] Generate migration `0003_add_carts.sql`
+- [x] Run `pnpm db:migrate:local` (completed)
+- [x] `src/lib/cart-constants.ts` — storage key + status enums
+- [x] `src/lib/cart.ts` — query/mutation helpers
+
+**Phase 2 — Server Actions**
+- [x] `src/app/cart/actions.ts`
+  - [x] startCartAction (with conflict detection)
+  - [x] resolveCartConflictAction (resume/replace with pendingItems)
+  - [x] getCartAction
+  - [x] addCartItemAction
+  - [x] updateCartItemAction
+  - [x] removeCartItemAction
+  - [x] clearCartAction
+- [x] Admin actions in `src/app/admin/actions.ts`
+  - [x] adminClearCartAction
+  - [x] adminDeleteCartAction
+  - [x] adminUpdateCartStatusAction
+  - [x] adminUpdateCartNotesAction
+
+**Phase 3 — Storefront Client**
+- [x] Update `src/context/CartContext.tsx` — persistence, hydration, details, pendingItems, server sync
+- [x] `src/components/CartStartModal.tsx` — email/phone/name form + recovery prompt
+- [x] Wire Add-to-Cart buttons to open modal when no cartId
+- [x] Update cart drawer to show identity block + "Not you?" sign-out + inline errors
+
+**Phase 4 — Admin UI**
+- [x] `src/app/admin/carts/page.tsx` — list with filters + stats
+- [x] `src/app/admin/carts/[id]/page.tsx` — single cart with line items + admin controls
+- [x] Add "Carts" link + Active Carts stat card to `src/app/admin/page.tsx`
+
+**Phase 5 — Verify & Deploy**
+- [x] `pnpm typecheck` passes
+- [x] `pnpm lint` passes
+- [ ] Manual smoke test (`pnpm preview`)
+- [ ] `pnpm db:migrate:remote`
+- [ ] `pnpm deploy`
+
+### Resume notes for next session
+
+When you come back, the quickest way to pick up:
+1. Run `pnpm db:migrate:local` to apply the 0003 migration locally
+2. The storefront still needs the final Add-to-Cart button wiring — search for where `useCart().addItem` is called today and replace with the new `addItemToCart` flow from `CartContext` (which handles the modal). Likely files: `src/components/ProductCard.tsx`, `src/app/products/[slug]/page.tsx`, any "Quick View" modal.
+3. The cart drawer (`src/components/CartDrawer.tsx` or similar) needs a small identity header + a "Not you? Sign out" link that calls `signOutCart()` from context. Error surface is already in context as `cartError`.
+4. Then typecheck + lint + manual smoke.
+
+---
+
+
+
 Persistent, identified shopping carts for the storefront, with visibility in the admin dashboard. Carts are identified by `cartId` (stored in `localStorage`) and keyed by `email` in the DB so they can be recovered if the client loses the id.
 
 ---

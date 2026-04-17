@@ -15,6 +15,7 @@ import {
 import { requireAdmin } from '@/lib/admin-auth';
 import { formatUsdFromCents } from '@/lib/money';
 import { getAdminProductGroupBySlug } from '@/lib/catalog';
+import AdminHeader from '@/components/AdminHeader';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,26 +40,7 @@ export default async function AdminProductPage({ params }: AdminProductPageProps
 
   return (
     <div className="min-h-screen bg-[#faf9f7]">
-      {/* Topnav */}
-      <nav className="sticky top-0 z-50 border-b border-foreground bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5">
-          <div className="flex items-center gap-3">
-            <Link href="/admin" className="flex items-center gap-2 text-muted transition-colors hover:text-foreground">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M19 12H5M12 19l-7-7 7-7" />
-              </svg>
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Dashboard</span>
-            </Link>
-            <span className="text-muted">/</span>
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground">{product.name}</span>
-          </div>
-          <form action={logoutAction}>
-            <button type="submit" className="border border-foreground px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-foreground transition-colors hover:bg-foreground hover:text-white">
-              Sign Out
-            </button>
-          </form>
-        </div>
-      </nav>
+      <AdminHeader logoutAction={logoutAction} productName={product.name} />
 
       <div className="mx-auto max-w-7xl space-y-10 px-6 py-10 sm:px-12 lg:px-20">
         {/* Product Hero Header */}
@@ -316,16 +298,20 @@ export default async function AdminProductPage({ params }: AdminProductPageProps
                   <input type="hidden" name="parentProductId" value={product.id} />
                   <input type="hidden" name="parentSlug" value={product.slug} />
                   <input type="hidden" name="parentProductName" value={product.name} />
+                  <input type="hidden" name="imageUrl" value={variant.imageUrl ?? ''} />
+                  <input type="hidden" name="description" value={variant.description ?? ''} />
+                  <input type="hidden" name="category" value={variant.category} />
+                  <input type="hidden" name="sortOrder" value={variant.sortOrder} />
 
                   <div className="flex-1 space-y-5">
                     <div className="space-y-4">
                       <label className="block space-y-1.5">
-                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted">Name</span>
+                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted">Variant Name</span>
                         <input
                           type="text"
                           name="variantName"
                           required
-                          defaultValue={variant.variantName ?? variant.name}
+                          defaultValue={variant.variantName ?? ''}
                           className="w-full border-b border-foreground bg-transparent py-1 text-sm font-semibold text-foreground outline-none focus:border-pink-dark"
                         />
                       </label>

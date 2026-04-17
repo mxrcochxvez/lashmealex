@@ -223,10 +223,37 @@ export async function mergeCartItems(
   cartId: string,
   incoming: Array<{ productId: string; quantity: number }>,
 ) {
+  const db = getDb();
   for (const item of incoming) {
     if (!item.productId || item.quantity <= 0) continue;
-    await upsertCartItem(cartId, item.productId, item.quantity);
+    
+    const existing = await db
+      .select()
+      .from(cartItems)
+      .where(and(eq(cartItems.cartId, cartId), eq(cartItems.productId, item.productId)))
+      .get();
+
+    if (existing) {
+      // Use the higher quantity between what's on server and what's in local session
+      // this avoids 'doubling' items if user adds same item before and after identifying
+      if (item.quantity > existing.quantity) {
+        await db
+          .update(cartItems)
+          .set({ quantity: item.quantity, updatedAt: new Date() })
+          .where(eq(cartItems.id, existing.id));
+      }
+    } else {
+      await db.insert(cartItems).values({
+        id: crypto.randomUUID(),
+        cartId,
+        productId: item.productId,
+        quantity: item.quantity,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+    }
   }
+  await touchCart(cartId);
 }
 
 export async function replaceCartItems(

@@ -205,7 +205,7 @@ export default function Cart() {
                   <div className="space-y-4">
                     <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
                       <span className="text-muted">Subtotal</span>
-                      <span className="text-foreground">${subtotal.toFixed(2)}</span>
+                      <span className="text-foreground">${(subtotal / 100).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
                       <span className="text-muted">Pickup</span>
@@ -213,7 +213,7 @@ export default function Cart() {
                     </div>
                     <div className="flex justify-between text-xl font-bold pt-4 border-t border-line">
                       <span className="text-foreground">Total</span>
-                      <span className="text-foreground">${subtotal.toFixed(2)}</span>
+                      <span className="text-foreground">${(subtotal / 100).toFixed(2)}</span>
                     </div>
                   </div>
 

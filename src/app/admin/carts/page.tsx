@@ -4,6 +4,7 @@ import { getAdminCartStats, listAdminCarts } from '@/lib/cart';
 import { formatUsdFromCents } from '@/lib/money';
 import { logoutAction } from '../actions';
 import { type CartStatus } from '@/lib/cart-constants';
+import AdminHeader from '@/components/AdminHeader';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,38 +42,7 @@ export default async function AdminCartsPage({
 
   return (
     <div className="min-h-screen bg-[#faf9f7]">
-      {/* Topnav */}
-      <nav className="sticky top-0 z-50 border-b border-foreground bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5">
-          <div className="flex items-center gap-8">
-            <Link href="/admin">
-              <p className="font-display text-lg leading-none tracking-tight text-foreground">Lashmealex</p>
-              <p className="mt-0.5 text-[9px] font-bold uppercase tracking-[0.35em] text-pink-dark">Admin</p>
-            </Link>
-            <div className="hidden items-center gap-12 sm:flex">
-              <Link href="/admin#products" className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted transition-colors hover:text-foreground">
-                Products
-              </Link>
-              <Link href="/admin#orders" className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted transition-colors hover:text-foreground">
-                Orders
-              </Link>
-              <Link href="/admin/carts" className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground transition-colors hover:text-foreground">
-                Carts
-              </Link>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link href="/" className="hidden text-[10px] font-bold uppercase tracking-[0.2em] text-muted transition-colors hover:text-foreground sm:block">
-              View Storefront ↗
-            </Link>
-            <form action={logoutAction}>
-              <button type="submit" className="border border-foreground px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-foreground transition-colors hover:bg-foreground hover:text-white">
-                Sign Out
-              </button>
-            </form>
-          </div>
-        </div>
-      </nav>
+      <AdminHeader logoutAction={logoutAction} />
 
       <div className="mx-auto max-w-7xl space-y-14 px-6 py-10 sm:px-12 lg:px-20">
         {/* Page Header */}

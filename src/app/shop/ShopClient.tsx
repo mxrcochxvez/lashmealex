@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { Filter } from 'lucide-react';
 
 import Cart from '@/components/Cart';
+import CartStartModal from '@/components/CartStartModal';
 import FilterSidebar, { FilterOptions } from '@/components/FilterSidebar';
 import Header from '@/components/Header';
 import { FadeIn, ProductCardSkeleton } from '@/components/LoadingStates';
@@ -40,7 +41,7 @@ export default function ShopClient({
   initialProducts,
   initialCategory,
 }: ShopClientProps) {
-  const { items: cartItems, isOpen: isCartOpen, openCart, closeCart, addItem, removeItem, updateQuantity, itemCount } = useCart();
+  const { isOpen: isCartOpen, openCart, addItem, itemCount } = useCart();
   const [filters, setFilters] = useState<FilterOptions>({
     category: initialCategory ? [initialCategory] : [],
     priceRange: [0, priceCeiling],
@@ -51,7 +52,6 @@ export default function ShopClient({
   });
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<ProductCardProduct | null>(null);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [wishlist, setWishlist] = useState<string[]>([]);
@@ -88,8 +88,8 @@ export default function ShopClient({
     });
   }, [filters, initialProducts, searchQuery]);
 
-  const handleAddToCart = (product: CartProduct, quantity = 1) => {
-    addItem({
+  const handleAddToCart = async (product: CartProduct, quantity = 1) => {
+    await addItem({
       id: product.id,
       name: product.name,
       price: product.price,
@@ -245,14 +245,8 @@ export default function ShopClient({
         isWishlisted={selectedProduct ? wishlist.includes(selectedProduct.id) : false}
       />
 
-      <Cart
-        isOpen={isCartOpen}
-        onClose={closeCart}
-        items={cartItems}
-        onUpdateQuantity={updateQuantity}
-        onRemoveItem={removeItem}
-        onCheckout={async () => closeCart()}
-      />
+      <Cart />
+      <CartStartModal />
     </div>
   );
 }

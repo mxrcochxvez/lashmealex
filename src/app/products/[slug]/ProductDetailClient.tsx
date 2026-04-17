@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, Star, ChevronLeft, ChevronRight, Minus, Plus, Truck, Shield, RefreshCw } from 'lucide-react';
 import { clsx } from 'clsx';
+import { useCart } from '@/context/CartContext';
 import HeaderShell from '../../../components/HeaderShell';
 import { LoadingButton, FadeIn } from '../../../components/LoadingStates';
 import ProductGridWithQuickView from '../../../components/ProductGridWithQuickView';
@@ -34,6 +35,7 @@ interface ProductDetailClientProps {
 }
 
 export default function ProductDetailClient({ product, relatedProducts }: ProductDetailClientProps) {
+  const { addItem } = useCart();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedVariantId, setSelectedVariantId] = useState(product.variants[0]?.id ?? '');
   const [quantity, setQuantity] = useState(1);
@@ -46,11 +48,16 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
   const hasMultipleImages = images.length > 1;
 
   const handleAddToCart = async () => {
+    if (!selectedVariant) return;
     setIsAddingToCart(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await addItem({
+      id: selectedVariant.id,
+      name: `${product.parentProductName} ${selectedVariant.variantName}`.trim(),
+      price: selectedVariant.price,
+      image: images[0],
+      category: product.category,
+    }, quantity);
     setIsAddingToCart(false);
-    // Show success message or redirect to cart
   };
 
   const handleToggleWishlist = () => {

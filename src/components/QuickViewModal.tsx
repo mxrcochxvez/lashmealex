@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Heart, Star, ChevronLeft, ChevronRight, Share2, Check } from 'lucide-react';
@@ -8,7 +8,6 @@ import { clsx } from 'clsx';
 import { LoadingButton } from './LoadingStates';
 import type { ProductCardProduct } from './ProductCard';
 import type { StoreVariant } from '@/lib/catalog';
-import { useCart } from '@/context/CartContext';
 
 interface Product extends ProductCardProduct {
   images?: string[];
@@ -22,7 +21,7 @@ interface QuickViewModalProps {
   product: Product | null;
   isOpen: boolean;
   onClose: () => void;
-  onAddToCart: (product: Product, quantity: number) => void;
+  onAddToCart: (product: Product, quantity: number) => Promise<void> | void;
   onToggleWishlist: (productId: string) => void;
   isWishlisted?: boolean;
 }
@@ -36,16 +35,19 @@ export default function QuickViewModal({
   isWishlisted = false
 }: QuickViewModalProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [selectedVariantId, setSelectedVariantId] = useState('');
+  const [selectedVariantId, setSelectedVariantId] = useState(product?.variants?.[0]?.id ?? '');
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [copied, setCopied] = useState(false);
-  const { addItem } = useCart();
 
-  useEffect(() => {
-    setSelectedVariantId(product?.variants?.[0]?.id ?? '');
+  // Sync state to product when it changes
+  const [prevProductId, setPrevProductId] = useState(product?.id);
+  if (product && product.id !== prevProductId) {
+    setPrevProductId(product.id);
+    setSelectedVariantId(product.variants?.[0]?.id ?? '');
     setQuantity(1);
-  }, [product]);
+    setCurrentImageIndex(0);
+  }
 
   if (!product) return null;
 
@@ -72,14 +74,8 @@ export default function QuickViewModal({
 
   const handleAddToCart = async () => {
     setIsAddingToCart(true);
-    addItem({
-      id: cartProduct.id,
-      name: cartProduct.name,
-      price: cartProduct.price,
-      image: cartProduct.image,
-      category: cartProduct.category,
-    }, quantity);
-    onAddToCart(cartProduct, quantity);
+    // addItem is handled by the parent via onAddToCart
+    await onAddToCart(cartProduct, quantity);
     setIsAddingToCart(false);
     onClose();
   };

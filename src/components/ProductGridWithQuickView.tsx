@@ -4,6 +4,7 @@ import { useState } from 'react';
 import ProductCard, { type ProductCardProduct } from './ProductCard';
 import QuickViewModal from './QuickViewModal';
 import { FadeIn } from './LoadingStates';
+import { useCart } from '@/context/CartContext';
 
 interface ProductGridWithQuickViewProps {
   products: ProductCardProduct[];
@@ -16,6 +17,7 @@ export default function ProductGridWithQuickView({
   columns = 4,
   className,
 }: ProductGridWithQuickViewProps) {
+  const { addItem } = useCart();
   const [selectedProduct, setSelectedProduct] = useState<ProductCardProduct | null>(null);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [wishlist, setWishlist] = useState<string[]>([]);
@@ -33,9 +35,14 @@ export default function ProductGridWithQuickView({
     );
   };
 
-  const handleAddToCart = (product: ProductCardProduct, quantity = 1) => {
-    // Future: integrate with cart state
-    console.log('Add to cart:', product.name, 'qty:', quantity);
+  const handleAddToCart = async (product: ProductCardProduct, quantity = 1) => {
+    await addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+      category: product.category,
+    }, quantity);
     setIsQuickViewOpen(false);
   };
 
@@ -53,6 +60,7 @@ export default function ProductGridWithQuickView({
             <ProductCard
               product={product}
               onQuickView={handleQuickView}
+              onAddToCart={handleAddToCart}
               onToggleWishlist={handleToggleWishlist}
               isWishlisted={wishlist.includes(product.id)}
             />

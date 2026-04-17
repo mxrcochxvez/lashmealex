@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Header from './Header';
 import SearchModal from './SearchModal';
 import Cart from './Cart';
+import CartStartModal from './CartStartModal';
 import { useCart } from '@/context/CartContext';
 
 interface SearchProduct {
@@ -22,7 +23,7 @@ interface HeaderShellProps {
 
 export default function HeaderShell({ products = [], wishlistItemCount = 0 }: HeaderShellProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const { items, isOpen, openCart, closeCart, updateQuantity, removeItem, itemCount } = useCart();
+  const { openCart, itemCount } = useCart();
 
   return (
     <>
@@ -39,14 +40,9 @@ export default function HeaderShell({ products = [], wishlistItemCount = 0 }: He
         onSearch={() => setIsSearchOpen(false)}
         products={products}
       />
-      <Cart
-        isOpen={isOpen}
-        onClose={closeCart}
-        items={items}
-        onUpdateQuantity={updateQuantity}
-        onRemoveItem={removeItem}
-        onCheckout={async () => closeCart()}
-      />
+      <Cart />
+      <CartStartModal />
     </>
   );
 }
+

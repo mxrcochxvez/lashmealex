@@ -56,8 +56,6 @@ const wishlistProducts: WishlistItem[] = [
 export default function WishlistPage() {
   const [wishlistItems, setWishlistItems] = useState(wishlistProducts);
   const [cartItems, setCartItems] = useState<WishlistCartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAddingAllToCart, setIsAddingAllToCart] = useState(false);
 
   const handleAddToCart = (product: WishlistItem, quantity = 1) => {
@@ -90,8 +88,6 @@ export default function WishlistPage() {
     setIsAddingAllToCart(false);
     setWishlistItems([]);
   };
-
-  const cartItemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <div className="min-h-screen bg-background">

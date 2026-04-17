@@ -96,7 +96,6 @@ export default function WishlistPage() {
   return (
     <div className="min-h-screen bg-background">
       <HeaderShell
-        cartItemCount={cartItemCount}
         wishlistItemCount={wishlistItems.length}
       />
 

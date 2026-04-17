@@ -5,6 +5,7 @@
   "packageManager": "pnpm@10.30.0",
   "scripts": {
     "dev": "next dev",
+    "dev:remote": "NEXT_REMOTE_BINDINGS=1 next dev",
     "build": "next build --webpack && opennextjs-cloudflare build --skipNextBuild",
     "build:worker": "opennextjs-cloudflare build",
     "start": "next start",

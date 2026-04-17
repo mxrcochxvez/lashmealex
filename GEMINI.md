@@ -40,10 +40,16 @@ Lashmealex is a high-performance, SEO-optimized e-commerce storefront for a beau
 - `pnpm db:migrate:remote`: Apply migrations to production D1.
 - `pnpm db:seed:remote`: Seed production D1 from `seed.sql`.
 
-### Quality & Verification
+## Git Conventions
 
-- `pnpm lint`: Run ESLint across the codebase.
-- `pnpm typecheck`: Run TypeScript compiler check.
+- **Atomic Commits:** Prefer small, focused commits that do one thing well.
+- **Piecemeal Staging:** Stage files logically related to a single change rather than all changed files at once.
+- **Commit Format:** Use the Karma/Angular style for messages:
+  - `feat(scope): description` for new features.
+  - `fix: description` for bug fixes.
+  - `docs: description` for documentation updates.
+  - `feat(dx): description` for developer experience improvements.
+- **Example Flow:** Stage schema/migrations -> commit `feat(db)`; stage logic -> commit `feat(logic)`; stage UI -> commit `feat(ui)`.
 
 ## Key Directory Structure
 

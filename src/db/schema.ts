@@ -43,3 +43,28 @@ export const orderItems = sqliteTable("order_items", {
   quantity: integer("quantity").notNull(),
   price: integer("price").notNull(), // price at the time of purchase
 });
+
+export const carts = sqliteTable("carts", {
+  id: text("id").primaryKey(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  name: text("name").notNull(),
+  status: text("status").notNull().default("active"), // active, converted, abandoned
+  notes: text("notes"),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  lastActiveAt: integer("last_active_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+}, (table) => ({
+  emailIdx: uniqueIndex("carts_email_idx").on(table.email),
+}));
+
+export const cartItems = sqliteTable("cart_items", {
+  id: text("id").primaryKey(),
+  cartId: text("cart_id").notNull().references(() => carts.id, { onDelete: "cascade" }),
+  productId: text("product_id").notNull().references(() => products.id),
+  quantity: integer("quantity").notNull().default(1),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+}, (table) => ({
+  cartProductIdx: uniqueIndex("cart_items_cart_product_idx").on(table.cartId, table.productId),
+}));

@@ -2,61 +2,31 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, Minus, Trash2, ShoppingBag, ChevronRight } from 'lucide-react';
-import { clsx } from 'clsx';
+import { X, Plus, Minus, Trash2, ShoppingBag, LogOut, AlertCircle } from 'lucide-react';
 import { LoadingButton } from './LoadingStates';
+import { useCart } from '@/context/CartContext';
 
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  image?: string;
-  category: string;
-}
-
-interface CartProps {
-  isOpen: boolean;
-  onClose: () => void;
-  items: CartItem[];
-  onUpdateQuantity: (itemId: string, quantity: number) => void;
-  onRemoveItem: (itemId: string) => void;
-  onCheckout: () => void;
-}
-
-export default function Cart({
-  isOpen,
-  onClose,
-  items,
-  onUpdateQuantity,
-  onRemoveItem,
-  onCheckout
-}: CartProps) {
+export default function Cart() {
+  const {
+    items,
+    isOpen,
+    closeCart,
+    updateQuantity,
+    removeItem,
+    identity,
+    signOutCart,
+    cartError,
+    subtotal,
+    clearError
+  } = useCart();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
-
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shipping = subtotal >= 25 ? 0 : 5; // Free shipping over $25
-  const total = subtotal + shipping;
 
   const handleCheckout = async () => {
     setIsCheckingOut(true);
-    await onCheckout();
+    // Checkout logic here later
+    await new Promise(resolve => setTimeout(resolve, 1000));
     setIsCheckingOut(false);
-    onClose();
-  };
-
-  const incrementQuantity = (itemId: string) => {
-    const item = items.find(item => item.id === itemId);
-    if (item) {
-      onUpdateQuantity(itemId, item.quantity + 1);
-    }
-  };
-
-  const decrementQuantity = (itemId: string) => {
-    const item = items.find(item => item.id === itemId);
-    if (item && item.quantity > 1) {
-      onUpdateQuantity(itemId, item.quantity - 1);
-    }
+    closeCart();
   };
 
   return (
@@ -69,7 +39,7 @@ export default function Cart({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
+            onClick={closeCart}
           />
 
           {/* Cart Sidebar */}
@@ -89,13 +59,51 @@ export default function Cart({
                   </h2>
                 </div>
                 <button
-                  onClick={onClose}
+                  onClick={closeCart}
                   className="focus-ring p-2 text-foreground transition-colors hover:text-pink-dark"
                   aria-label="Close cart"
                 >
                   <X size={20} />
                 </button>
               </div>
+
+              {/* Identity Block */}
+              {identity && (
+                <div className="bg-[#faf9f7] border-b border-line px-8 py-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted">Shopping as</p>
+                    <p className="text-sm font-semibold text-foreground truncate max-w-[200px]">{identity.name}</p>
+                  </div>
+                  <button
+                    onClick={signOutCart}
+                    className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted hover:text-pink-dark transition-colors"
+                  >
+                    Not you? <LogOut size={12} />
+                  </button>
+                </div>
+              )}
+
+              {/* Error Display */}
+              <AnimatePresence>
+                {cartError && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="bg-red-50 border-b border-red-200 px-8 py-3 flex items-start justify-between gap-4">
+                      <div className="flex items-start gap-2 text-red-700">
+                        <AlertCircle size={14} className="mt-0.5 flex-shrink-0" />
+                        <p className="text-xs leading-relaxed">{cartError}</p>
+                      </div>
+                      <button onClick={clearError} className="text-red-400 hover:text-red-600 transition-colors">
+                        <X size={14} />
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Cart Items */}
               <div className="flex-1 overflow-y-auto p-8">
@@ -105,7 +113,7 @@ export default function Cart({
                     <h3 className="mb-4 font-display text-3xl font-medium text-foreground">Your bag is empty</h3>
                     <p className="text-muted mb-10 text-sm">Discover our collection and start your beauty journey.</p>
                     <button
-                      onClick={onClose}
+                      onClick={closeCart}
                       className="btn-primary w-full"
                     >
                       Browse the Shop
@@ -155,8 +163,7 @@ export default function Cart({
                               {/* Quantity Controls */}
                               <div className="flex items-center border border-foreground">
                                 <button
-                                  onClick={() => decrementQuantity(item.id)}
-                                  disabled={item.quantity <= 1}
+                                  onClick={() => updateQuantity(item.id, item.quantity - 1)}
                                   className="focus-ring flex h-8 w-8 items-center justify-center bg-white text-foreground transition-colors hover:bg-foreground hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
                                   aria-label="Decrease quantity"
                                 >
@@ -166,7 +173,7 @@ export default function Cart({
                                   {item.quantity}
                                 </span>
                                 <button
-                                  onClick={() => incrementQuantity(item.id)}
+                                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
                                   className="focus-ring flex h-8 w-8 items-center justify-center bg-white text-foreground transition-colors hover:bg-foreground hover:text-white"
                                   aria-label="Increase quantity"
                                 >
@@ -178,7 +185,7 @@ export default function Cart({
 
                           {/* Remove Button */}
                           <button
-                            onClick={() => onRemoveItem(item.id)}
+                            onClick={() => removeItem(item.id)}
                             className="focus-ring p-1 text-muted transition-colors hover:text-foreground self-start"
                             aria-label="Remove item"
                           >
@@ -221,7 +228,7 @@ export default function Cart({
                     </LoadingButton>
 
                     <button
-                      onClick={onClose}
+                      onClick={closeCart}
                       className="w-full btn-secondary py-5"
                     >
                       Continue Shopping
@@ -242,3 +249,4 @@ export default function Cart({
     </AnimatePresence>
   );
 }
+

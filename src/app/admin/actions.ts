@@ -4,9 +4,10 @@ import { desc, eq, inArray } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
-import { orderItems, orders, products } from '@/db/schema';
+import { cartItems, carts, orderItems, orders, products } from '@/db/schema';
 import { loginAdmin, logoutAdmin, requireAdmin } from '@/lib/admin-auth';
 import { getDb, getProductImagePath, getProductImagesBucket } from '@/lib/cloudflare';
+import { CART_STATUSES, type CartStatus } from '@/lib/cart-constants';
 
 function slugify(value: string) {
   return value
@@ -616,4 +617,48 @@ export async function updateOrderAction(formData: FormData) {
     .where(eq(orders.id, orderId));
 
   revalidatePath('/admin');
+}
+
+export async function adminClearCartAction(formData: FormData) {
+  await requireAdmin();
+  const cartId = String(formData.get('cartId') ?? '');
+  if (!cartId) return;
+  const db = getDb();
+  await db.delete(cartItems).where(eq(cartItems.cartId, cartId));
+  await db.update(carts).set({ updatedAt: new Date(), lastActiveAt: new Date() }).where(eq(carts.id, cartId));
+  revalidatePath('/admin/carts');
+  revalidatePath(`/admin/carts/${cartId}`);
+}
+
+export async function adminDeleteCartAction(formData: FormData) {
+  await requireAdmin();
+  const cartId = String(formData.get('cartId') ?? '');
+  if (!cartId) return;
+  const db = getDb();
+  await db.delete(cartItems).where(eq(cartItems.cartId, cartId));
+  await db.delete(carts).where(eq(carts.id, cartId));
+  revalidatePath('/admin');
+  revalidatePath('/admin/carts');
+  redirect('/admin/carts');
+}
+
+export async function adminUpdateCartStatusAction(formData: FormData) {
+  await requireAdmin();
+  const cartId = String(formData.get('cartId') ?? '');
+  const status = String(formData.get('status') ?? '') as CartStatus;
+  if (!cartId || !CART_STATUSES.includes(status)) return;
+  const db = getDb();
+  await db.update(carts).set({ status, updatedAt: new Date() }).where(eq(carts.id, cartId));
+  revalidatePath('/admin/carts');
+  revalidatePath(`/admin/carts/${cartId}`);
+}
+
+export async function adminUpdateCartNotesAction(formData: FormData) {
+  await requireAdmin();
+  const cartId = String(formData.get('cartId') ?? '');
+  const notes = String(formData.get('notes') ?? '').trim();
+  if (!cartId) return;
+  const db = getDb();
+  await db.update(carts).set({ notes: notes || null, updatedAt: new Date() }).where(eq(carts.id, cartId));
+  revalidatePath(`/admin/carts/${cartId}`);
 }

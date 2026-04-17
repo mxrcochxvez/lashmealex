@@ -1,0 +1,194 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+
+import {
+  MAX_PENDING_ITEMS,
+  isValidEmail,
+  isValidPhone,
+  normalizeEmail,
+  normalizePhone,
+  type PendingCartItem,
+} from "@/lib/cart-constants";
+import {
+  clearCart as clearCartLib,
+  createCart,
+  findCartByEmail,
+  getCartWithItems,
+  mergeCartItems,
+  removeCartItem as removeCartItemLib,
+  replaceCartItems,
+  setCartItemQuantity as setCartItemQuantityLib,
+  upsertCartItem as upsertCartItemLib,
+  validateActiveProduct,
+} from "@/lib/cart";
+import { getDb } from "@/lib/cloudflare";
+import { cartItems, products } from "@/db/schema";
+import { and, eq } from "drizzle-orm";
+
+export type StartCartResult =
+  | { ok: true; cartId: string }
+  | { ok: false; conflict: "existing"; existingCartId: string; itemCount: number; name: string }
+  | { ok: false; error: string };
+
+export async function startCartAction(formData: FormData): Promise<StartCartResult> {
+  const email = String(formData.get("email") ?? "");
+  const phone = String(formData.get("phone") ?? "");
+  const name = String(formData.get("name") ?? "").trim();
+
+  if (!isValidEmail(email)) return { ok: false, error: "Enter a valid email." };
+  if (!isValidPhone(phone)) return { ok: false, error: "Enter a valid phone number." };
+  if (name.length < 1 || name.length > 80) return { ok: false, error: "Enter your name." };
+
+  const normalized = normalizeEmail(email);
+  const existing = await findCartByEmail(normalized);
+
+  if (existing) {
+    const full = await getCartWithItems(existing.id);
+    return {
+      ok: false,
+      conflict: "existing",
+      existingCartId: existing.id,
+      itemCount: full?.itemCount ?? 0,
+      name: existing.name,
+    };
+  }
+
+  const cartId = await createCart({ email: normalized, phone: normalizePhone(phone), name });
+  return { ok: true, cartId };
+}
+
+export type ResolveConflictResult =
+  | { ok: true; cartId: string }
+  | { ok: false; error: string };
+
+function parsePendingItems(raw: unknown): PendingCartItem[] {
+  if (typeof raw !== "string" || !raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(
+        (v): v is PendingCartItem =>
+          v && typeof v === "object" && typeof v.productId === "string" && typeof v.quantity === "number" && v.quantity > 0,
+      )
+      .slice(0, MAX_PENDING_ITEMS);
+  } catch {
+    return [];
+  }
+}
+
+export async function resolveCartConflictAction(formData: FormData): Promise<ResolveConflictResult> {
+  const existingCartId = String(formData.get("existingCartId") ?? "");
+  const intent = String(formData.get("intent") ?? "");
+  const pending = parsePendingItems(formData.get("pendingItems"));
+
+  if (!existingCartId) return { ok: false, error: "Missing cart." };
+  if (intent !== "resume" && intent !== "replace") return { ok: false, error: "Invalid choice." };
+
+  const cart = await getCartWithItems(existingCartId);
+  if (!cart) return { ok: false, error: "Cart no longer exists." };
+
+  if (intent === "resume") {
+    if (pending.length > 0) await mergeCartItems(existingCartId, pending);
+  } else {
+    await replaceCartItems(existingCartId, pending);
+  }
+
+  return { ok: true, cartId: existingCartId };
+}
+
+export async function getCartAction(cartId: string) {
+  if (!cartId) return null;
+  return getCartWithItems(cartId);
+}
+
+export type MutationResult =
+  | { ok: true; cartId: string }
+  | { ok: false; error: string };
+
+async function getEffectiveInventory(productId: string): Promise<number | null> {
+  const db = getDb();
+  const row = await db
+    .select({ inventory: products.inventory, isActive: products.isActive })
+    .from(products)
+    .where(eq(products.id, productId))
+    .get();
+  if (!row || !row.isActive) return null;
+  return row.inventory;
+}
+
+async function getCurrentQuantity(cartId: string, productId: string): Promise<number> {
+  const db = getDb();
+  const row = await db
+    .select({ quantity: cartItems.quantity })
+    .from(cartItems)
+    .where(and(eq(cartItems.cartId, cartId), eq(cartItems.productId, productId)))
+    .get();
+  return row?.quantity ?? 0;
+}
+
+export async function addCartItemAction(formData: FormData): Promise<MutationResult> {
+  const cartId = String(formData.get("cartId") ?? "");
+  const productId = String(formData.get("productId") ?? "");
+  const quantity = Number(formData.get("quantity") ?? 1);
+
+  if (!cartId || !productId || !Number.isFinite(quantity) || quantity <= 0) {
+    return { ok: false, error: "Invalid request." };
+  }
+
+  const active = await validateActiveProduct(productId);
+  if (!active) return { ok: false, error: "This item is not available." };
+
+  const inventory = await getEffectiveInventory(productId);
+  if (inventory === null) return { ok: false, error: "This item is not available." };
+  const currentQty = await getCurrentQuantity(cartId, productId);
+  if (currentQty + quantity > inventory) {
+    return { ok: false, error: `Only ${inventory - currentQty} left in stock.` };
+  }
+
+  await upsertCartItemLib(cartId, productId, quantity);
+  revalidatePath("/admin/carts");
+  revalidatePath(`/admin/carts/${cartId}`);
+  return { ok: true, cartId };
+}
+
+export async function updateCartItemAction(formData: FormData): Promise<MutationResult> {
+  const cartId = String(formData.get("cartId") ?? "");
+  const productId = String(formData.get("productId") ?? "");
+  const quantity = Number(formData.get("quantity") ?? 0);
+
+  if (!cartId || !productId || !Number.isFinite(quantity) || quantity < 0) {
+    return { ok: false, error: "Invalid request." };
+  }
+
+  if (quantity > 0) {
+    const inventory = await getEffectiveInventory(productId);
+    if (inventory === null) return { ok: false, error: "This item is not available." };
+    if (quantity > inventory) return { ok: false, error: `Only ${inventory} left in stock.` };
+  }
+
+  await setCartItemQuantityLib(cartId, productId, quantity);
+  revalidatePath("/admin/carts");
+  revalidatePath(`/admin/carts/${cartId}`);
+  return { ok: true, cartId };
+}
+
+export async function removeCartItemAction(formData: FormData): Promise<MutationResult> {
+  const cartId = String(formData.get("cartId") ?? "");
+  const productId = String(formData.get("productId") ?? "");
+  if (!cartId || !productId) return { ok: false, error: "Invalid request." };
+  await removeCartItemLib(cartId, productId);
+  revalidatePath("/admin/carts");
+  revalidatePath(`/admin/carts/${cartId}`);
+  return { ok: true, cartId };
+}
+
+export async function clearCartAction(formData: FormData): Promise<MutationResult> {
+  const cartId = String(formData.get("cartId") ?? "");
+  if (!cartId) return { ok: false, error: "Invalid request." };
+  await clearCartLib(cartId);
+  revalidatePath("/admin/carts");
+  revalidatePath(`/admin/carts/${cartId}`);
+  return { ok: true, cartId };
+}

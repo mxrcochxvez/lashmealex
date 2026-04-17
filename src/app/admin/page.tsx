@@ -9,16 +9,33 @@ import { getAdminOrderStats, listAdminOrders } from '@/lib/orders';
 export const dynamic = 'force-dynamic';
 
 function formatDate(value: Date | null) {
-  if (!value) {
-    return '—';
-  }
-
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(value);
+  if (!value) return '—';
+  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(value);
 }
+
+const paymentStyle: Record<string, string> = {
+  pending: 'border-amber-200 bg-amber-50 text-amber-700',
+  paid: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+  cancelled: 'border-red-200 bg-red-50 text-red-600',
+};
+
+const fulfillmentStyle: Record<string, string> = {
+  unfulfilled: 'border-slate-200 bg-slate-100 text-slate-500',
+  ready_for_pickup: 'border-blue-200 bg-blue-50 text-blue-700',
+  fulfilled: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+};
+
+const paymentLabel: Record<string, string> = {
+  pending: 'Pending',
+  paid: 'Paid',
+  cancelled: 'Cancelled',
+};
+
+const fulfillmentLabel: Record<string, string> = {
+  unfulfilled: 'Unfulfilled',
+  ready_for_pickup: 'Ready for Pickup',
+  fulfilled: 'Fulfilled',
+};
 
 export default async function AdminPage() {
   await requireAdmin();
@@ -31,310 +48,376 @@ export default async function AdminPage() {
   ]);
 
   return (
-    <div className="min-h-screen bg-background px-6 py-12 sm:px-12 lg:px-20">
-      <div className="mx-auto max-w-7xl space-y-12">
-        <div className="flex flex-col gap-6 border border-foreground bg-white p-8 sm:flex-row sm:items-end sm:justify-between sm:p-12">
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-pink-dark">
-              Owner Dashboard
-            </p>
-            <h1 className="mt-5 font-display text-5xl tracking-tighter text-foreground">
-              Inventory + Orders
-            </h1>
-            <p className="mt-5 max-w-2xl text-sm leading-relaxed text-muted">
-              Manage your catalog, pricing, and inventory from one place. Each lash variant is its
-              own storefront record, so what you update here is what customers see.
-            </p>
+    <div className="min-h-screen bg-[#faf9f7]">
+      {/* Topnav */}
+      <nav className="sticky top-0 z-50 border-b border-foreground bg-white">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5">
+          <div className="flex items-center gap-8">
+            <div>
+              <p className="font-display text-lg leading-none tracking-tight text-foreground">Lashmealex</p>
+              <p className="mt-0.5 text-[9px] font-bold uppercase tracking-[0.35em] text-pink-dark">Admin</p>
+            </div>
+            <div className="hidden items-center gap-12 sm:flex">
+              <a href="#products" className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted transition-colors hover:text-foreground">
+                Products
+              </a>
+              <a href="#orders" className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted transition-colors hover:text-foreground">
+                Orders
+              </a>
+            </div>
           </div>
-
-          <div className="flex flex-wrap gap-3">
-            <Link href="/" className="btn-secondary">
-              View Storefront
+          <div className="flex items-center gap-4">
+            <Link href="/" className="hidden text-[10px] font-bold uppercase tracking-[0.2em] text-muted transition-colors hover:text-foreground sm:block">
+              View Storefront ↗
             </Link>
             <form action={logoutAction}>
-              <button type="submit" className="btn-primary">
+              <button type="submit" className="border border-foreground px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-foreground transition-colors hover:bg-foreground hover:text-white">
                 Sign Out
               </button>
             </form>
           </div>
         </div>
+      </nav>
 
-        <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-5">
+      <div className="mx-auto max-w-7xl space-y-14 px-6 py-10 sm:px-12 lg:px-20">
+        {/* Page Header */}
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-pink-dark">Dashboard</p>
+          <h1 className="mt-3 font-display text-5xl tracking-tighter text-foreground">Your Shop</h1>
+          <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted">
+            Manage your lash catalog and track orders. Any changes you make here show up on the storefront immediately.
+          </p>
+        </div>
+
+        {/* Stats */}
+        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
           <div className="border border-foreground bg-white p-6">
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">Active Variants</p>
-            <p className="mt-5 font-display text-4xl text-foreground">{catalogStats.activeVariants}</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">Products Listed</p>
+            <p className="mt-4 font-display text-4xl text-foreground">{catalogStats.activeVariants}</p>
+            <p className="mt-2 text-[10px] text-muted">active on storefront</p>
           </div>
           <div className="border border-foreground bg-white p-6">
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">Inventory On Hand</p>
-            <p className="mt-5 font-display text-4xl text-foreground">{catalogStats.totalInventory}</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">Items in Stock</p>
+            <p className="mt-4 font-display text-4xl text-foreground">{catalogStats.totalInventory}</p>
+            <p className="mt-2 text-[10px] text-muted">trays available</p>
           </div>
           <div className="border border-foreground bg-white p-6">
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">Inventory Value</p>
-            <p className="mt-5 font-display text-4xl text-foreground">
-              {formatUsdFromCents(catalogStats.inventoryValue)}
-            </p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">Stock Value</p>
+            <p className="mt-4 font-display text-4xl text-foreground">{formatUsdFromCents(catalogStats.inventoryValue)}</p>
+            <p className="mt-2 text-[10px] text-muted">at retail price</p>
           </div>
           <div className="border border-foreground bg-white p-6">
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">Paid Sales</p>
-            <p className="mt-5 font-display text-4xl text-foreground">
-              {formatUsdFromCents(orderStats.grossSales)}
-            </p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">Revenue Collected</p>
+            <p className="mt-4 font-display text-4xl text-foreground">{formatUsdFromCents(orderStats.grossSales)}</p>
+            <p className="mt-2 text-[10px] text-muted">from paid orders</p>
           </div>
           <div className="border border-foreground bg-white p-6">
             <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">Units Sold</p>
-            <p className="mt-5 font-display text-4xl text-foreground">{orderStats.unitsSold}</p>
+            <p className="mt-4 font-display text-4xl text-foreground">{orderStats.unitsSold}</p>
+            <p className="mt-2 text-[10px] text-muted">items purchased</p>
           </div>
         </section>
 
-        <section className="space-y-6">
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-pink-dark">Catalog</p>
-            <h2 className="mt-4 font-display text-4xl tracking-tighter text-foreground">
-              Products
-            </h2>
+        {/* Products */}
+        <section id="products" className="scroll-mt-20 space-y-8">
+          <div className="flex items-end justify-between">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-pink-dark">Catalog</p>
+              <h2 className="mt-3 font-display text-4xl tracking-tighter text-foreground">Products</h2>
+            </div>
+            <p className="text-xs text-muted">{productGroups.length} product{productGroups.length !== 1 ? 's' : ''}</p>
           </div>
 
-          <form
-            action={createProductAction}
-            className="grid gap-5 border border-foreground bg-white p-6 lg:grid-cols-[1.2fr_1fr_1fr]"
-          >
-            <div className="space-y-4">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-pink-dark">
-                  Create Product
-                </p>
-                <p className="mt-3 max-w-xl text-sm text-muted">
-                  Add a new parent product with its first variant. Shared product details can be
-                  edited later from the dedicated product editor.
-                </p>
-              </div>
+          {/* Product Cards */}
+          {productGroups.length > 0 && (
+            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              {productGroups.map((product) => (
+                <div key={product.id} className="flex flex-col border border-foreground bg-white">
+                  <div className="relative aspect-square w-full overflow-hidden bg-[#f0ede8]">
+                    {product.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-muted opacity-30">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+                          <rect x="3" y="3" width="18" height="18" rx="2" />
+                          <circle cx="9" cy="9" r="2" />
+                          <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                        </svg>
+                        <p className="text-[9px] font-bold uppercase tracking-[0.2em]">No image</p>
+                      </div>
+                    )}
+                    <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
+                      <span className={`border px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] ${product.hasActiveVariant ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white/90 text-slate-500'}`}>
+                        {product.hasActiveVariant ? 'Active' : 'Hidden'}
+                      </span>
+                      {product.isFeatured && (
+                        <span className="border border-pink-200 bg-pink-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] text-pink-dark">
+                          Featured
+                        </span>
+                      )}
+                    </div>
+                  </div>
 
-              <label className="space-y-2">
-                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
-                  Product Name
-                </span>
-                <input
-                  type="text"
-                  name="productName"
-                  required
-                  className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none"
-                />
-              </label>
-
-              <label className="space-y-2">
-                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
-                  Description
-                </span>
-                <textarea
-                  name="description"
-                  rows={5}
-                  className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none"
-                />
-              </label>
-            </div>
-
-            <div className="space-y-4">
-              <label className="space-y-2">
-                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
-                  Category
-                </span>
-                <input
-                  type="text"
-                  name="category"
-                  defaultValue="Lashes"
-                  className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none"
-                />
-              </label>
-
-              <label className="space-y-2">
-                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
-                  Product Image
-                </span>
-                <input
-                  type="file"
-                  name="image"
-                  accept="image/*"
-                  className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none file:mr-3 file:border-0 file:bg-foreground file:px-3 file:py-2 file:text-xs file:font-bold file:uppercase file:tracking-[0.2em] file:text-background"
-                />
-              </label>
-
-              <label className="space-y-2">
-                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
-                  First Variant Name
-                </span>
-                <input
-                  type="text"
-                  name="initialVariantName"
-                  required
-                  placeholder="CC Curl 0.03"
-                  className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none"
-                />
-              </label>
-            </div>
-
-            <div className="space-y-4">
-              <label className="space-y-2">
-                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
-                  Price
-                </span>
-                <input
-                  type="number"
-                  name="price"
-                  min="0"
-                  step="0.01"
-                  required
-                  className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none"
-                />
-              </label>
-
-              <label className="space-y-2">
-                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
-                  Compare-At Price
-                </span>
-                <input
-                  type="number"
-                  name="compareAtPrice"
-                  min="0"
-                  step="0.01"
-                  className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none"
-                />
-              </label>
-
-              <label className="space-y-2">
-                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
-                  Starting Inventory
-                </span>
-                <input
-                  type="number"
-                  name="inventory"
-                  min="0"
-                  defaultValue="0"
-                  required
-                  className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none"
-                />
-              </label>
-
-              <div className="space-y-3 border border-line p-4">
-                <label className="flex items-center gap-3 text-sm text-foreground">
-                  <input type="checkbox" name="isActive" defaultChecked />
-                  Active on storefront
-                </label>
-                <label className="flex items-center gap-3 text-sm text-foreground">
-                  <input type="checkbox" name="isFeatured" defaultChecked />
-                  Featured on homepage
-                </label>
-              </div>
-
-              <button type="submit" className="btn-primary w-full">
-                Create Product
-              </button>
-            </div>
-          </form>
-
-          <div className="space-y-4">
-            {productGroups.map((product) => (
-              <div
-                key={product.id}
-                className="grid gap-5 border border-foreground bg-white p-6 lg:grid-cols-[2fr_1fr_auto]"
-              >
-                <div>
-                  <p className="font-display text-2xl text-foreground">{product.name}</p>
-                  <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
-                    {product.variantCount} variants
-                  </p>
-                  <p className="mt-3 max-w-2xl text-sm text-muted">{product.description}</p>
+                  <div className="flex flex-1 flex-col p-5">
+                    <p className="font-display text-xl leading-tight text-foreground">{product.name}</p>
+                    {product.category && (
+                      <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-muted">{product.category}</p>
+                    )}
+                    <p className="mt-3 line-clamp-2 text-xs leading-relaxed text-muted">{product.description}</p>
+                    <div className="mt-4 flex items-center gap-4 border-t border-[#e8e5e0] pt-4 text-xs text-muted">
+                      <span>{product.variantCount} variant{product.variantCount !== 1 ? 's' : ''}</span>
+                      <span>·</span>
+                      <span>{product.totalInventory} in stock</span>
+                    </div>
+                    <div className="mt-4">
+                      <Link
+                        href={`/admin/products/${product.slug}`}
+                        className="block w-full border border-foreground px-4 py-2.5 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-foreground transition-colors hover:bg-foreground hover:text-white"
+                      >
+                        Manage Product
+                      </Link>
+                    </div>
+                  </div>
                 </div>
+              ))}
+            </div>
+          )}
 
+          {/* Add Product Form */}
+          <div className="border border-foreground bg-white">
+            <div className="border-b border-foreground px-6 py-5">
+              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-pink-dark">New Product</p>
+              <h3 className="mt-2 font-display text-2xl tracking-tighter text-foreground">Add a Product</h3>
+              <p className="mt-1.5 text-xs text-muted">
+                Fill out the details below to list a new product. You can add more variations after creating it.
+              </p>
+            </div>
+
+            <form action={createProductAction} className="p-6">
+              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                {/* Basic Info */}
                 <div className="space-y-4">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">Category</p>
-                  <p className="text-sm text-foreground">{product.category}</p>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">Inventory</p>
-                  <p className="text-sm text-foreground">{product.totalInventory} trays</p>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">Visibility</p>
-                  <p className="text-sm text-foreground">
-                    {product.hasActiveVariant ? 'Active' : 'Hidden'} · {product.isFeatured ? 'Featured' : 'Standard'}
-                  </p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-foreground">Basic Info</p>
+
+                  <label className="block space-y-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted">Product Name *</span>
+                    <input
+                      type="text"
+                      name="productName"
+                      required
+                      placeholder="e.g. Classic Faux Mink Lashes"
+                      className="w-full border border-foreground bg-transparent px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-muted/40 focus:border-pink-dark"
+                    />
+                  </label>
+
+                  <label className="block space-y-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted">Description</span>
+                    <textarea
+                      name="description"
+                      rows={4}
+                      placeholder="Describe this product for customers…"
+                      className="w-full resize-none border border-foreground bg-transparent px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-muted/40 focus:border-pink-dark"
+                    />
+                  </label>
+
+                  <label className="block space-y-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted">Category</span>
+                    <input
+                      type="text"
+                      name="category"
+                      defaultValue="Lashes"
+                      className="w-full border border-foreground bg-transparent px-3 py-2.5 text-sm text-foreground outline-none focus:border-pink-dark"
+                    />
+                  </label>
                 </div>
 
-                <div className="flex items-end">
-                  <Link href={`/admin/products/${product.slug}`} className="btn-secondary w-full text-center">
-                    Edit Product
-                  </Link>
+                {/* First Variation */}
+                <div className="space-y-4">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-foreground">First Variation</p>
+
+                  <label className="block space-y-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted">Variation Name *</span>
+                    <input
+                      type="text"
+                      name="initialVariantName"
+                      required
+                      placeholder="e.g. CC Curl 0.03"
+                      className="w-full border border-foreground bg-transparent px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-muted/40 focus:border-pink-dark"
+                    />
+                  </label>
+
+                  <label className="block space-y-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted">Price *</span>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted">$</span>
+                      <input
+                        type="number"
+                        name="price"
+                        min="0"
+                        step="0.01"
+                        required
+                        placeholder="0.00"
+                        className="w-full border border-foreground bg-transparent py-2.5 pl-7 pr-3 text-sm text-foreground outline-none placeholder:text-muted/40 focus:border-pink-dark"
+                      />
+                    </div>
+                  </label>
+
+                  <label className="block space-y-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted">
+                      Compare-At Price{' '}
+                      <span className="font-normal normal-case tracking-normal text-muted/70">(optional, for sales)</span>
+                    </span>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted">$</span>
+                      <input
+                        type="number"
+                        name="compareAtPrice"
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                        className="w-full border border-foreground bg-transparent py-2.5 pl-7 pr-3 text-sm text-foreground outline-none placeholder:text-muted/40 focus:border-pink-dark"
+                      />
+                    </div>
+                  </label>
+                </div>
+
+                {/* Inventory & Visibility */}
+                <div className="space-y-4">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-foreground">Inventory & Visibility</p>
+
+                  <label className="block space-y-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted">Starting Inventory *</span>
+                    <input
+                      type="number"
+                      name="inventory"
+                      min="0"
+                      defaultValue="0"
+                      required
+                      className="w-full border border-foreground bg-transparent px-3 py-2.5 text-sm text-foreground outline-none focus:border-pink-dark"
+                    />
+                  </label>
+
+                  <label className="block space-y-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted">Product Image</span>
+                    <input
+                      type="file"
+                      name="image"
+                      accept="image/*"
+                      className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none file:mr-3 file:border-0 file:bg-foreground file:px-3 file:py-1.5 file:text-[9px] file:font-bold file:uppercase file:tracking-[0.15em] file:text-background"
+                    />
+                  </label>
+
+                  <div className="space-y-3 border border-[#e5e2dd] bg-[#f5f3f0] p-4">
+                    <label className="flex cursor-pointer items-start gap-3 text-xs text-foreground">
+                      <input type="checkbox" name="isActive" defaultChecked className="mt-0.5 h-4 w-4 accent-foreground" />
+                      <span>
+                        <span className="font-semibold">Show on storefront</span>
+                        <span className="ml-1 text-muted">— customers can see and buy this</span>
+                      </span>
+                    </label>
+                    <label className="flex cursor-pointer items-start gap-3 text-xs text-foreground">
+                      <input type="checkbox" name="isFeatured" defaultChecked className="mt-0.5 h-4 w-4 accent-foreground" />
+                      <span>
+                        <span className="font-semibold">Feature on homepage</span>
+                        <span className="ml-1 text-muted">— highlights this product</span>
+                      </span>
+                    </label>
+                  </div>
+
+                  <button type="submit" className="btn-primary w-full">
+                    Create Product →
+                  </button>
                 </div>
               </div>
-            ))}
+            </form>
           </div>
         </section>
 
-        <section className="space-y-6">
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-pink-dark">Orders</p>
-            <h2 className="mt-4 font-display text-4xl tracking-tighter text-foreground">
-              Sales Tracking
-            </h2>
+        {/* Orders */}
+        <section id="orders" className="scroll-mt-20 space-y-8">
+          <div className="flex items-end justify-between">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-pink-dark">Sales</p>
+              <h2 className="mt-3 font-display text-4xl tracking-tighter text-foreground">Orders</h2>
+            </div>
+            <p className="text-xs text-muted">{orders.length} order{orders.length !== 1 ? 's' : ''}</p>
           </div>
 
           {orders.length === 0 ? (
-            <div className="border border-dashed border-foreground bg-white p-10 text-sm text-muted">
-              No orders have been recorded yet. Once checkout is live, this table will track
-              payments, fulfillment status, and pickup readiness.
+            <div className="border border-dashed border-foreground bg-white px-10 py-16 text-center">
+              <p className="font-display text-2xl text-foreground">No orders yet</p>
+              <p className="mt-2 text-sm text-muted">
+                Once customers start purchasing, their orders will appear here.
+              </p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {orders.map((order) => (
                 <form
                   key={order.id}
                   action={updateOrderAction}
-                  className="grid gap-5 border border-foreground bg-white p-6 lg:grid-cols-[1.4fr_1fr_1fr_auto]"
+                  className="border border-foreground bg-white"
                 >
                   <input type="hidden" name="orderId" value={order.id} />
 
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted">
-                      {order.customerEmail}
-                    </p>
-                    {order.customerName && (
-                      <p className="mt-2 text-sm text-foreground">{order.customerName}</p>
-                    )}
-                    <p className="mt-2 text-sm text-muted">
-                      {formatDate(order.createdAt)} · {formatUsdFromCents(order.total)}
-                    </p>
-                  </div>
+                  <div className="grid gap-4 p-5 sm:grid-cols-[1fr_160px_160px_auto] sm:items-center">
+                    {/* Customer */}
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">
+                        {order.customerName ?? order.customerEmail}
+                      </p>
+                      {order.customerName && (
+                        <p className="mt-0.5 text-[11px] text-muted">{order.customerEmail}</p>
+                      )}
+                      <p className="mt-2 text-xs text-muted">{formatDate(order.createdAt)}</p>
+                      <p className="mt-1 font-display text-lg text-foreground">{formatUsdFromCents(order.total)}</p>
+                      <div className="mt-2.5 flex flex-wrap gap-1.5">
+                        <span className={`border px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] ${paymentStyle[order.status] ?? 'border-gray-200 bg-gray-100 text-gray-600'}`}>
+                          {paymentLabel[order.status] ?? order.status}
+                        </span>
+                        <span className={`border px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] ${fulfillmentStyle[order.fulfillmentStatus] ?? 'border-gray-200 bg-gray-100 text-gray-600'}`}>
+                          {fulfillmentLabel[order.fulfillmentStatus] ?? order.fulfillmentStatus}
+                        </span>
+                      </div>
+                    </div>
 
-                  <label className="space-y-2">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
-                      Payment
-                    </span>
-                    <select
-                      name="status"
-                      defaultValue={order.status}
-                      className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none"
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="paid">Paid</option>
-                      <option value="cancelled">Cancelled</option>
-                    </select>
-                  </label>
+                    {/* Payment */}
+                    <label className="space-y-1.5">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted">Payment</span>
+                      <select
+                        name="status"
+                        defaultValue={order.status}
+                        className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none"
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="paid">Paid</option>
+                        <option value="cancelled">Cancelled</option>
+                      </select>
+                    </label>
 
-                  <label className="space-y-2">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
-                      Fulfillment
-                    </span>
-                    <select
-                      name="fulfillmentStatus"
-                      defaultValue={order.fulfillmentStatus}
-                      className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none"
-                    >
-                      <option value="unfulfilled">Unfulfilled</option>
-                      <option value="ready_for_pickup">Ready for Pickup</option>
-                      <option value="fulfilled">Fulfilled</option>
-                    </select>
-                  </label>
+                    {/* Fulfillment */}
+                    <label className="space-y-1.5">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted">Fulfillment</span>
+                      <select
+                        name="fulfillmentStatus"
+                        defaultValue={order.fulfillmentStatus}
+                        className="w-full border border-foreground bg-transparent px-3 py-2 text-sm text-foreground outline-none"
+                      >
+                        <option value="unfulfilled">Unfulfilled</option>
+                        <option value="ready_for_pickup">Ready for Pickup</option>
+                        <option value="fulfilled">Fulfilled</option>
+                      </select>
+                    </label>
 
-                  <div className="flex items-end">
-                    <button type="submit" className="btn-secondary w-full">
-                      Update
-                    </button>
+                    <div className="flex sm:justify-end">
+                      <button
+                        type="submit"
+                        className="border border-foreground px-5 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-foreground transition-colors hover:bg-foreground hover:text-white"
+                      >
+                        Save
+                      </button>
+                    </div>
                   </div>
                 </form>
               ))}

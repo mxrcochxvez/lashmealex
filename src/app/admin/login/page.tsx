@@ -54,6 +54,7 @@ export default async function AdminLoginPage({ searchParams }: AdminLoginPagePro
               type="password"
               name="password"
               required
+              suppressHydrationWarning
               className="w-full border border-foreground bg-transparent px-4 py-4 text-sm text-foreground outline-none"
             />
           </label>

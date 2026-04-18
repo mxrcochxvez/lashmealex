@@ -5,7 +5,7 @@ import { requireAdmin } from '@/lib/admin-auth';
 import { getAdminCatalogStats, listAdminProductGroups } from '@/lib/catalog';
 import { formatUsdFromCents } from '@/lib/money';
 import { getAdminOrderStats, listAdminOrders } from '@/lib/orders';
-import { getAdminCartStats } from '@/lib/cart';
+import { getAdminCartStats, listAdminCarts } from '@/lib/cart';
 import AdminHeader from '@/components/AdminHeader';
 
 export const dynamic = 'force-dynamic';
@@ -42,12 +42,13 @@ const fulfillmentLabel: Record<string, string> = {
 export default async function AdminPage() {
   await requireAdmin();
 
-  const [productGroups, catalogStats, orders, orderStats, cartStats] = await Promise.all([
+  const [productGroups, catalogStats, orders, orderStats, cartStats, recentCarts] = await Promise.all([
     listAdminProductGroups(),
     getAdminCatalogStats(),
     listAdminOrders(),
     getAdminOrderStats(),
     getAdminCartStats(),
+    listAdminCarts(),
   ]);
 
   return (
@@ -76,11 +77,11 @@ export default async function AdminPage() {
             <p className="mt-4 font-display text-4xl text-foreground">{catalogStats.totalInventory}</p>
             <p className="mt-2 text-[10px] text-muted">trays available</p>
           </div>
-          <div className="border border-foreground bg-white p-6">
+          <Link href="/admin/carts" className="border border-foreground bg-white p-6 block hover:bg-[#f5f3f0] transition-colors">
             <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">Active Carts</p>
             <p className="mt-4 font-display text-4xl text-foreground">{cartStats.activeCount}</p>
             <p className="mt-2 text-[10px] text-muted">{cartStats.abandonedCount} abandoned</p>
-          </div>
+          </Link>
           <div className="border border-foreground bg-white p-6">
             <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted">Revenue Collected</p>
             <p className="mt-4 font-display text-4xl text-foreground">{formatUsdFromCents(orderStats.grossSales)}</p>
@@ -307,6 +308,76 @@ export default async function AdminPage() {
               </div>
             </form>
           </div>
+        </section>
+
+        {/* Carts */}
+        <section id="carts" className="scroll-mt-20 space-y-8">
+          <div className="flex items-end justify-between">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-pink-dark">Leads</p>
+              <h2 className="mt-3 font-display text-4xl tracking-tighter text-foreground">Shopping Carts</h2>
+            </div>
+            <Link
+              href="/admin/carts"
+              className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted hover:text-foreground transition-colors"
+            >
+              View All →
+            </Link>
+          </div>
+
+          {recentCarts.length === 0 ? (
+            <div className="border border-dashed border-foreground bg-white px-10 py-16 text-center">
+              <p className="font-display text-2xl text-foreground">No carts yet</p>
+              <p className="mt-2 text-sm text-muted">
+                Customer sessions will appear here once shoppers start building their bags.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto border border-foreground bg-white">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-foreground bg-[#faf9f7] text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
+                    <th className="px-6 py-4">Customer</th>
+                    <th className="px-6 py-4">Status</th>
+                    <th className="px-6 py-4">Items</th>
+                    <th className="px-6 py-4">Subtotal</th>
+                    <th className="px-6 py-4">Last Active</th>
+                    <th className="px-6 py-4"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line text-sm text-foreground">
+                  {recentCarts.map((cart) => (
+                    <tr key={cart.id} className="hover:bg-[#faf9f7]">
+                      <td className="px-6 py-5">
+                        <p className="font-semibold">{cart.name}</p>
+                        <p className="text-xs text-muted">{cart.email}</p>
+                      </td>
+                      <td className="px-6 py-5">
+                        <span className={`border px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] ${
+                          cart.status === 'active' ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                          : cart.status === 'abandoned' ? 'border-amber-200 bg-amber-50 text-amber-700'
+                          : 'border-blue-200 bg-blue-50 text-blue-700'
+                        }`}>
+                          {cart.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-5 text-muted">{cart.itemCount} items</td>
+                      <td className="px-6 py-5 font-medium">{formatUsdFromCents(cart.subtotal)}</td>
+                      <td className="px-6 py-5 text-xs text-muted">{formatDate(cart.lastActiveAt)}</td>
+                      <td className="px-6 py-5 text-right">
+                        <Link
+                          href={`/admin/carts/${cart.id}`}
+                          className="text-[10px] font-bold uppercase tracking-[0.2em] text-pink-dark hover:underline"
+                        >
+                          Details
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </section>
 
         {/* Orders */}

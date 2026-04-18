@@ -43,7 +43,17 @@ Deliverable: clicking "Checkout Now" creates a real order in D1.
 
 ## Phase 2 — Stripe Payment
 
-Goal: collect payment before the order is confirmed.
+Goal: collect payment before the order is confirmed. Support Apple Pay and Afterpay alongside standard card payments.
+
+### Payment methods
+
+| Method | How | Setup required |
+|--------|-----|----------------|
+| Credit/debit card | Stripe Checkout built-in | None |
+| Apple Pay | Stripe Checkout built-in for Safari/iOS | Domain verification file served at `/.well-known/apple-developer-merchantid-domain-association` |
+| Afterpay | Stripe Checkout built-in | Enable in Stripe Dashboard → Settings → Payment Methods; US orders $1–$2,000 |
+
+Both Apple Pay and Afterpay surface automatically in Stripe Checkout once enabled — no extra code needed.
 
 ### Environment setup
 
@@ -64,37 +74,35 @@ STRIPE_PUBLISHABLE_KEY=pk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 ```
 
-### API route — create Payment Intent
+### API route — create Checkout Session
 
 **`src/app/api/checkout/route.ts`** (`POST`):
 - Accepts `{ cartId }`
-- Loads cart subtotal from DB
-- Creates a Stripe `PaymentIntent` for the subtotal amount
-- Returns `{ clientSecret, paymentIntentId }`
+- Loads cart items + customer info from DB
+- Creates a Stripe `checkout.Session` with:
+  - `line_items` mapped from cart items (name, price, quantity)
+  - `payment_method_types: ['card']` — Afterpay and Apple Pay are added automatically via Dashboard settings
+  - `mode: 'payment'`
+  - `success_url: /checkout/success?session_id={CHECKOUT_SESSION_ID}`
+  - `cancel_url: /` (returns to storefront)
+  - `metadata: { cartId }` so the webhook can look up the cart
+- Returns `{ url }` — the hosted Stripe Checkout URL
 
 ### Checkout UI
 
-Two options — pick one:
-
-**Option A (simpler): Stripe Checkout (hosted page)**
-- Server creates a `checkout.Session` with line items
-- Redirect customer to Stripe's hosted page
+**Stripe Checkout (hosted page)** — redirect customer to Stripe's hosted page:
+- Handles card, Apple Pay, and Afterpay in one UI
+- PCI-compliant with no card data touching our servers
 - On success, Stripe redirects to `/checkout/success?session_id=...`
-- Success page verifies session and creates the order
-
-**Option B (custom): Stripe Elements (in-app)**
-- Add a `/checkout` page or modal with Stripe Elements embedded
-- Customer enters card details without leaving the site
-- On `paymentIntent.succeeded` client event, call `checkoutAction`
-
-Recommendation: **Option A** first — less code, PCI-compliant out of the box, faster to ship.
+- Success page verifies session and creates the order in D1
 
 ### Webhook handler
 
 **`src/app/api/webhooks/stripe/route.ts`** (`POST`):
-- Verify signature using `stripe.webhooks.constructEvent` + `STRIPE_WEBHOOK_SECRET`
-- Handle `checkout.session.completed` (Option A) or `payment_intent.succeeded` (Option B):
-  - Find order by `metadata.cartId` or `metadata.orderId`
+- Verify signature using `stripe.webhooks.constructEventAsync` + `STRIPE_WEBHOOK_SECRET`
+- Handle `checkout.session.completed`:
+  - Look up cart by `metadata.cartId`
+  - Call `createOrderFromCart(cartId)`
   - Set `orders.status` → `paid`
   - Revalidate `/admin`
 

@@ -157,7 +157,7 @@ export default function Cart() {
 
                             <div className="flex items-center justify-between mt-4">
                               <span className="text-sm font-bold text-foreground">
-                                ${item.price}
+                                ${(item.price / 100).toFixed(2)}
                               </span>
 
                               {/* Quantity Controls */}

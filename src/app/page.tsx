@@ -83,7 +83,11 @@ export default async function Home() {
                         style={{ backgroundImage: `url('${heroProduct.image}')` }}
                       />
                     ) : (
-                      <div className="absolute inset-0 bg-[#e8ddd7]" />
+                      <img
+                        src="/assets/IMG_5806.jpeg"
+                        alt="Lashmealex lash collection"
+                        className="absolute inset-0 h-full w-full object-cover object-center"
+                      />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#d9b09f]/20 to-transparent mix-blend-multiply" />
                   </div>
@@ -231,11 +235,31 @@ export default async function Home() {
           </div>
         </section>
 
+        {/* Photo strip */}
+        <section className="overflow-hidden border-y border-foreground">
+          <div className="flex">
+            {[
+              { src: "/assets/IMG_5801.jpeg", alt: "Velvet lash collection" },
+              { src: "/assets/IMG_5852.jpeg", alt: "Lash artist at work" },
+              { src: "/assets/IMG_5796.jpeg", alt: "Lashmealex cashmere collection" },
+              { src: "/assets/IMG_2844.jpeg", alt: "Lashmealex packaging" },
+            ].map((img, i) => (
+              <div key={img.src} className={`relative h-72 flex-1 overflow-hidden sm:h-96 ${i > 0 ? "border-l border-foreground" : ""}`}>
+                <img
+                  src={img.src}
+                  alt={img.alt}
+                  className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* Visit the salon */}
         <section className="px-6 py-16 sm:px-12 lg:px-20 lg:py-24">
           <div className="w-full">
             <FadeIn>
-              <div className="grid border border-foreground lg:grid-cols-2">
+              <div className="grid border border-foreground lg:grid-cols-[1fr_1fr_0.6fr]">
                 <div className="bg-white px-10 py-16 sm:px-16 sm:py-20 lg:border-r lg:border-foreground">
                   <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-pink-dark">
                     Fresno, CA
@@ -289,6 +313,14 @@ export default async function Home() {
                       </p>
                     </div>
                   </div>
+                </div>
+
+                <div className="relative hidden overflow-hidden border-l border-foreground lg:block">
+                  <img
+                    src="/assets/IMG_5796.jpeg"
+                    alt="Lashmealex lash tray"
+                    className="h-full w-full object-cover object-center"
+                  />
                 </div>
               </div>
             </FadeIn>

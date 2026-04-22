@@ -10,7 +10,17 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Lashmealex — Lashes, Aftercare & Beauty Essentials",
   description:
-    "Shop professional-grade lashes, adhesives, aftercare, and beauty tools from Lashmealex. Curated by a Fresno lash artist.",
+    "Shop professional-grade lashes, adhesives, aftercare, and beauty tools from Lashmealex. Curated by a Fresno lash artist. Same-day pickup in Fresno, CA.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Lashmealex — Lashes, Aftercare & Beauty Essentials",
+    description:
+      "Shop professional-grade lashes, adhesives, aftercare, and beauty tools from Lashmealex. Curated by a Fresno lash artist. Same-day pickup in Fresno, CA.",
+    url: "/",
+    type: "website",
+  },
 };
 
 export default async function Home() {

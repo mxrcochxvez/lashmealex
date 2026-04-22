@@ -15,6 +15,7 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://lashmealex.com"),
   title: {
     default: "Lashmealex Shop",
     template: "%s | Lashmealex Shop",
@@ -23,23 +24,37 @@ export const metadata: Metadata = {
     "Shop professional lashes, adhesives, aftercare, and beauty tools from Lashmealex. Curated by a Fresno lash artist.",
   keywords: [
     "lashmealex",
-    "lashes",
+    "lash supplies",
+    "lash extensions",
+    "lash adhesive",
+    "lash aftercare",
     "beauty products",
-    "Fresno",
-    "pickup",
-    "eyelash salon",
+    "Fresno lash artist",
+    "same-day pickup",
+    "eyelash salon Fresno",
   ],
   openGraph: {
+    siteName: "Lashmealex Shop",
     title: "Lashmealex Shop",
     description:
       "Shop professional lashes, adhesives, aftercare, and beauty tools. Curated by a Fresno lash artist.",
     type: "website",
+    locale: "en_US",
+    images: [
+      {
+        url: "/assets/IMG_5806.jpeg",
+        width: 1200,
+        height: 630,
+        alt: "Lashmealex — Professional Lash Products",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Lashmealex Shop",
     description:
       "Professional lashes, adhesives, aftercare, and beauty essentials from Lashmealex.",
+    images: ["/assets/IMG_5806.jpeg"],
   },
   alternates: {
     canonical: "/",

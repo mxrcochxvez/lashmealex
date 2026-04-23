@@ -25,6 +25,7 @@ export const products = sqliteTable("products", {
 
 export const orders = sqliteTable("orders", {
   id: text("id").primaryKey(),
+  stripeSessionId: text("stripe_session_id"),
   status: text("status").notNull().default("pending"), // pending, paid, shipped, fulfilled
   fulfillmentStatus: text("fulfillment_status").notNull().default("unfulfilled"),
   subtotal: integer("subtotal").notNull(),

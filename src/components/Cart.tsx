@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Minus, Trash2, ShoppingBag, LogOut, AlertCircle } from 'lucide-react';
 import { LoadingButton } from './LoadingStates';
 import { useCart } from '@/context/CartContext';
+import { createCheckoutSessionAction } from '@/app/cart/actions';
 
 export default function Cart() {
   const {
@@ -17,16 +18,23 @@ export default function Cart() {
     signOutCart,
     cartError,
     subtotal,
-    clearError
+    clearError,
+    cartId,
   } = useCart();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const handleCheckout = async () => {
+    if (!cartId) return;
+    setCheckoutError(null);
     setIsCheckingOut(true);
-    // Checkout logic here later
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsCheckingOut(false);
-    closeCart();
+    const result = await createCheckoutSessionAction(cartId);
+    if (result.ok) {
+      window.location.href = result.url;
+    } else {
+      setCheckoutError(result.error);
+      setIsCheckingOut(false);
+    }
   };
 
   return (
@@ -85,7 +93,7 @@ export default function Cart() {
 
               {/* Error Display */}
               <AnimatePresence>
-                {cartError && (
+                {(cartError || checkoutError) && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
@@ -95,9 +103,12 @@ export default function Cart() {
                     <div className="bg-red-50 border-b border-red-200 px-8 py-3 flex items-start justify-between gap-4">
                       <div className="flex items-start gap-2 text-red-700">
                         <AlertCircle size={14} className="mt-0.5 flex-shrink-0" />
-                        <p className="text-xs leading-relaxed">{cartError}</p>
+                        <p className="text-xs leading-relaxed">{cartError ?? checkoutError}</p>
                       </div>
-                      <button onClick={clearError} className="text-red-400 hover:text-red-600 transition-colors">
+                      <button
+                        onClick={() => { clearError(); setCheckoutError(null); }}
+                        className="text-red-400 hover:text-red-600 transition-colors"
+                      >
                         <X size={14} />
                       </button>
                     </div>

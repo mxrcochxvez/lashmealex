@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
+import Stripe from "stripe";
 
 import {
   MAX_PENDING_ITEMS,
@@ -22,7 +24,7 @@ import {
   upsertCartItem as upsertCartItemLib,
   validateActiveProduct,
 } from "@/lib/cart";
-import { getDb } from "@/lib/cloudflare";
+import { getDb, getStripeSecretKey } from "@/lib/cloudflare";
 import { cartItems, products } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 
@@ -191,4 +193,42 @@ export async function clearCartAction(formData: FormData): Promise<MutationResul
   revalidatePath("/admin/carts");
   revalidatePath(`/admin/carts/${cartId}`);
   return { ok: true, cartId };
+}
+
+export type CheckoutResult = { ok: true; url: string } | { ok: false; error: string };
+
+export async function createCheckoutSessionAction(cartId: string): Promise<CheckoutResult> {
+  if (!cartId) return { ok: false, error: "No cart found." };
+
+  const cart = await getCartWithItems(cartId);
+  if (!cart || cart.items.length === 0) return { ok: false, error: "Your cart is empty." };
+
+  const h = await headers();
+  const host = h.get("host") ?? "localhost:3000";
+  const proto = h.get("x-forwarded-proto") ?? "https";
+  const origin = `${proto}://${host}`;
+
+  const stripe = new Stripe(getStripeSecretKey());
+
+  const session = await stripe.checkout.sessions.create({
+    mode: "payment",
+    customer_email: cart.email,
+    line_items: cart.items.map((item) => ({
+      price_data: {
+        currency: "usd",
+        unit_amount: item.price,
+        product_data: {
+          name: item.variantName ? `${item.name} – ${item.variantName}` : item.name,
+          ...(item.image ? { images: [`${origin}${item.image}`] } : {}),
+        },
+      },
+      quantity: item.quantity,
+    })),
+    metadata: { cartId },
+    success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${origin}/checkout/cancel`,
+  });
+
+  if (!session.url) return { ok: false, error: "Failed to create checkout session." };
+  return { ok: true, url: session.url };
 }

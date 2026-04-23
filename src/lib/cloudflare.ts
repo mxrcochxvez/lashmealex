@@ -10,6 +10,8 @@ declare global {
     PRODUCT_IMAGES: R2Bucket;
     ADMIN_PASSWORD?: string;
     ADMIN_SESSION_SECRET?: string;
+    STRIPE_SECRET_KEY?: string;
+    STRIPE_WEBHOOK_SECRET?: string;
   }
 }
 
@@ -60,6 +62,18 @@ export function getProductImagesBucket() {
  * @param key The object key stored in the product-images bucket.
  * @returns The route path that can be used in storefront image fields.
  */
+export function getStripeSecretKey() {
+  const { env } = getCloudflareContext();
+  if (!env.STRIPE_SECRET_KEY) throw new Error("STRIPE_SECRET_KEY is not configured");
+  return env.STRIPE_SECRET_KEY;
+}
+
+export function getStripeWebhookSecret() {
+  const { env } = getCloudflareContext();
+  if (!env.STRIPE_WEBHOOK_SECRET) throw new Error("STRIPE_WEBHOOK_SECRET is not configured");
+  return env.STRIPE_WEBHOOK_SECRET;
+}
+
 export function getProductImagePath(key: string) {
   return `/images/${key
     .split('/')

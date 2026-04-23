@@ -3,8 +3,42 @@ import "server-only";
 import { desc, eq, sql } from "drizzle-orm";
 
 import { orderItems, orders } from "@/db/schema";
+import type { CartWithItems } from "./cart";
 
 import { getDb } from "./cloudflare";
+
+export async function createOrderFromCart(cart: CartWithItems, stripeSessionId: string): Promise<string> {
+  const db = getDb();
+  const now = new Date();
+  const orderId = crypto.randomUUID();
+
+  await db.insert(orders).values({
+    id: orderId,
+    stripeSessionId,
+    status: "paid",
+    fulfillmentStatus: "unfulfilled",
+    subtotal: cart.subtotal,
+    total: cart.subtotal,
+    customerEmail: cart.email,
+    customerName: cart.name,
+    createdAt: now,
+    updatedAt: now,
+  });
+
+  if (cart.items.length > 0) {
+    await db.insert(orderItems).values(
+      cart.items.map((item) => ({
+        id: crypto.randomUUID(),
+        orderId,
+        productId: item.productId,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+    );
+  }
+
+  return orderId;
+}
 
 /**
  * Lists orders for the owner dashboard.

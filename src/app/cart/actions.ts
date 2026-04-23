@@ -200,35 +200,41 @@ export type CheckoutResult = { ok: true; url: string } | { ok: false; error: str
 export async function createCheckoutSessionAction(cartId: string): Promise<CheckoutResult> {
   if (!cartId) return { ok: false, error: "No cart found." };
 
-  const cart = await getCartWithItems(cartId);
-  if (!cart || cart.items.length === 0) return { ok: false, error: "Your cart is empty." };
+  try {
+    const cart = await getCartWithItems(cartId);
+    if (!cart || cart.items.length === 0) return { ok: false, error: "Your cart is empty." };
 
-  const h = await headers();
-  const host = h.get("host") ?? "localhost:3000";
-  const proto = h.get("x-forwarded-proto") ?? "https";
-  const origin = `${proto}://${host}`;
+    const h = await headers();
+    const host = h.get("host") ?? "localhost:3000";
+    const proto = h.get("x-forwarded-proto") ?? "https";
+    const origin = `${proto}://${host}`;
 
-  const stripe = new Stripe(getStripeSecretKey());
+    const stripe = new Stripe(getStripeSecretKey());
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    customer_email: cart.email,
-    line_items: cart.items.map((item) => ({
-      price_data: {
-        currency: "usd",
-        unit_amount: item.price,
-        product_data: {
-          name: item.variantName ? `${item.name} – ${item.variantName}` : item.name,
-          ...(item.image ? { images: [`${origin}${item.image}`] } : {}),
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      customer_email: cart.email,
+      line_items: cart.items.map((item) => ({
+        price_data: {
+          currency: "usd",
+          unit_amount: item.price,
+          product_data: {
+            name: item.variantName ? `${item.name} – ${item.variantName}` : item.name,
+            ...(item.image ? { images: [`${origin}${item.image}`] } : {}),
+          },
         },
-      },
-      quantity: item.quantity,
-    })),
-    metadata: { cartId },
-    success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/checkout/cancel`,
-  });
+        quantity: item.quantity,
+      })),
+      metadata: { cartId },
+      success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/checkout/cancel`,
+    });
 
-  if (!session.url) return { ok: false, error: "Failed to create checkout session." };
-  return { ok: true, url: session.url };
+    if (!session.url) return { ok: false, error: "Failed to create checkout session." };
+    return { ok: true, url: session.url };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("createCheckoutSessionAction error:", message);
+    return { ok: false, error: message };
+  }
 }

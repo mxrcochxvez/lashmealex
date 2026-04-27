@@ -214,17 +214,24 @@ export async function createCheckoutSessionAction(cartId: string): Promise<Check
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       customer_email: cart.email,
-      line_items: cart.items.map((item) => ({
-        price_data: {
-          currency: "usd",
-          unit_amount: item.price,
-          product_data: {
-            name: item.variantName ? `${item.name} – ${item.variantName}` : item.name,
-            ...(item.image ? { images: [`${origin}${item.image}`] } : {}),
+      line_items: cart.items.map((item) => {
+        const imageUrl = item.image
+          ? item.image.startsWith("http")
+            ? item.image
+            : `${origin}${item.image}`
+          : null;
+        return {
+          price_data: {
+            currency: "usd",
+            unit_amount: item.price,
+            product_data: {
+              name: item.variantName ? `${item.name} – ${item.variantName}` : item.name,
+              ...(imageUrl ? { images: [imageUrl] } : {}),
+            },
           },
-        },
-        quantity: item.quantity,
-      })),
+          quantity: item.quantity,
+        };
+      }),
       metadata: { cartId },
       success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/checkout/cancel`,

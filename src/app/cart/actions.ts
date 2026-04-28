@@ -209,7 +209,9 @@ export async function createCheckoutSessionAction(cartId: string): Promise<Check
     const proto = h.get("x-forwarded-proto") ?? "https";
     const origin = `${proto}://${host}`;
 
-    const stripe = new Stripe(getStripeSecretKey());
+    const stripe = new Stripe(getStripeSecretKey(), {
+      httpClient: Stripe.createFetchHttpClient(),
+    });
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",

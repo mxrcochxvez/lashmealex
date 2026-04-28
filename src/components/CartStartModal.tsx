@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
 
 import { useCart } from '@/context/CartContext';
+import { analytics } from '@/lib/analytics';
 
 export default function CartStartModal() {
   const { isModalOpen, closeStartModal, startCart, resolveConflict, conflict, cartError, clearError } = useCart();
@@ -22,7 +23,10 @@ export default function CartStartModal() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    await startCart({ email, phone, name });
+    const result = await startCart({ email, phone, name });
+    if ('ok' in result && result.ok) {
+      analytics.cartIdentitySubmitted(name, email, phone);
+    }
     setSubmitting(false);
   };
 

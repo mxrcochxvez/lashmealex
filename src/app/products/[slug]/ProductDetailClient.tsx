@@ -1,11 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, Star, ChevronLeft, ChevronRight, Minus, Plus, Truck, Shield, RefreshCw } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useCart } from '@/context/CartContext';
+import { analytics } from '@/lib/analytics';
 import HeaderShell from '../../../components/HeaderShell';
 import { LoadingButton, FadeIn } from '../../../components/LoadingStates';
 import ProductGridWithQuickView from '../../../components/ProductGridWithQuickView';
@@ -47,16 +48,24 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
   const images = product.images || [];
   const hasMultipleImages = images.length > 1;
 
+  // Track product view once on mount
+  useEffect(() => {
+    analytics.productViewed(product.id, product.name, selectedVariant?.price ?? product.price);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleAddToCart = async () => {
     if (!selectedVariant) return;
     setIsAddingToCart(true);
+    const name = `${product.parentProductName} ${selectedVariant.variantName}`.trim();
     await addItem({
       id: selectedVariant.id,
-      name: `${product.parentProductName} ${selectedVariant.variantName}`.trim(),
+      name,
       price: selectedVariant.price,
       image: images[0],
       category: product.category,
     }, quantity);
+    analytics.addToCart(selectedVariant.id, name, selectedVariant.price, quantity);
     setIsAddingToCart(false);
   };
 
@@ -261,7 +270,10 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
                       {product.variants.map((variant) => (
                         <button
                           key={variant.id}
-                          onClick={() => setSelectedVariantId(variant.id)}
+                          onClick={() => {
+                          setSelectedVariantId(variant.id);
+                          analytics.variantSelected(variant.id, variant.variantName ?? variant.name, variant.price);
+                        }}
                           className={clsx(
                             'border px-4 py-3 text-left transition-colors',
                             selectedVariant?.id === variant.id

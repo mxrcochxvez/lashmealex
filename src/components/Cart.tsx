@@ -6,6 +6,7 @@ import { X, Plus, Minus, Trash2, ShoppingBag, LogOut, AlertCircle } from 'lucide
 import { LoadingButton } from './LoadingStates';
 import { useCart } from '@/context/CartContext';
 import { createCheckoutSessionAction } from '@/app/cart/actions';
+import { analytics } from '@/lib/analytics';
 
 export default function Cart() {
   const {
@@ -25,14 +26,24 @@ export default function Cart() {
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const handleCheckout = async () => {
-    if (!cartId) return;
+    if (!cartId) {
+      setCheckoutError("Please add items to your bag before checking out.");
+      return;
+    }
     setCheckoutError(null);
     setIsCheckingOut(true);
-    const result = await createCheckoutSessionAction(cartId);
-    if (result.ok) {
-      window.location.href = result.url;
-    } else {
-      setCheckoutError(result.error);
+    try {
+      analytics.checkoutInitiated(subtotal, items.length);
+      const result = await createCheckoutSessionAction(cartId);
+      if (result.ok) {
+        window.location.href = result.url;
+      } else {
+        setCheckoutError(result.error);
+        setIsCheckingOut(false);
+      }
+    } catch (err) {
+      console.error("Checkout failed:", err);
+      setCheckoutError("Something went wrong. Please try again.");
       setIsCheckingOut(false);
     }
   };

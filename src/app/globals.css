@@ -43,6 +43,16 @@
   --font-display: var(--font-display);
   --shadow-soft: var(--shadow-soft);
   --shadow-card: var(--shadow-card);
+
+  /* z-index scale */
+  --z-index-dropdown: 1000;
+  --z-index-sticky: 1020;
+  --z-index-fixed: 1030;
+  --z-index-modal-backdrop: 9000;
+  --z-index-modal: 9010;
+  --z-index-popover: 9020;
+  --z-index-tooltip: 9030;
+  --z-index-toast: 9040;
 }
 
 html {

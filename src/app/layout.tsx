@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
+import { ConsentProvider } from "@/context/ConsentContext";
+import CookieBanner from "@/components/CookieBanner";
 
 const jakartaSans = Plus_Jakarta_Sans({
   variable: "--font-sans",
@@ -79,7 +81,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${jakartaSans.variable} ${cormorant.variable}`}>
-      <body><CartProvider>{children}</CartProvider></body>
+      <body>
+        <ConsentProvider>
+          <CartProvider>{children}</CartProvider>
+          <CookieBanner />
+        </ConsentProvider>
+      </body>
     </html>
   );
 }

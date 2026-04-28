@@ -1,8 +1,10 @@
 import Link from "next/link";
+import PurchaseTracker from "./PurchaseTracker";
 
 export default function CheckoutSuccessPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <PurchaseTracker />
       <div className="max-w-md w-full text-center space-y-8">
         <div className="space-y-4">
           <h1 className="font-display text-5xl font-medium text-foreground">Thank You</h1>
